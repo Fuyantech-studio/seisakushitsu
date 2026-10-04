@@ -1,0 +1,1215 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>お風呂ワード制作室</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="お風呂ワード">
+<meta name="theme-color" content="#f4f1ea">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Zen+Maru+Gothic:wght@700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+:root{
+  --ink:#1d2a3a; --ink-2:#4a5a6c; --ink-3:#8593a3;
+  --bg:#f4f1ea; --card:#ffffff; --line:#e3ddd1; --tile:#ebe6db;
+  --aqua:#1f8a8c; --aqua-2:#d6eeee; --aqua-ink:#0f5c5e;
+  --warn:#b7791f; --warn-bg:#fdf3dc; --bad:#b4442d; --bad-bg:#fbe5df; --ok:#2f7d4f; --ok-bg:#e1f2e6;
+  --radius:14px; --shadow:0 1px 2px rgba(29,42,58,.06),0 4px 14px rgba(29,42,58,.05);
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Noto Sans JP",system-ui,sans-serif;font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+a{color:var(--aqua-ink)}
+button,input,select,textarea{font:inherit;color:inherit}
+header.top{position:sticky;top:0;padding-top:env(safe-area-inset-top,0px);z-index:20;background:rgba(244,241,234,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1180px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+.brand .mark{width:34px;height:34px;border-radius:10px;background:var(--aqua);display:grid;place-items:center;flex:none}
+.brand h1{font-family:"Zen Maru Gothic","Noto Sans JP",sans-serif;font-size:17px;margin:0;line-height:1.2}
+.brand small{display:block;color:var(--ink-3);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tabs{display:flex;background:var(--tile);border-radius:12px;padding:4px;gap:4px}
+.tabs button{border:0;background:transparent;padding:8px 16px;border-radius:9px;cursor:pointer;font-weight:500;color:var(--ink-2)}
+.tabs button.on{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+.who{display:flex;align-items:center;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:500;background:var(--tile);color:var(--ink-2);white-space:nowrap}
+.chip.aqua{background:var(--aqua-2);color:var(--aqua-ink)}
+.chip.warn{background:var(--warn-bg);color:var(--warn)}
+.chip.bad{background:var(--bad-bg);color:var(--bad)}
+.chip.ok{background:var(--ok-bg);color:var(--ok)}
+.iconbtn{border:1px solid var(--line);background:var(--card);border-radius:10px;width:36px;height:36px;display:grid;place-items:center;cursor:pointer}
+main{max-width:1180px;margin:0 auto;padding:18px 16px 80px}
+.banner{background:var(--warn-bg);color:#6b4a12;border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:13px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.banner button{margin-left:auto}
+.grid{display:grid;gap:16px}
+.g-att{grid-template-columns:minmax(0,1fr) 340px}
+@media (max-width:900px){.g-att{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+.card h2{font-size:15px;margin:0 0 12px;display:flex;align-items:center;gap:8px}
+.card h2 .sp{flex:1}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.f{display:flex;flex-direction:column;gap:4px;min-width:0}
+.f label{font-size:11px;color:var(--ink-3);font-weight:500}
+.f input,.f select,.f textarea{border:1px solid var(--line);background:#fffdf9;border-radius:9px;padding:7px 10px;min-width:0;width:100%}
+.f textarea{min-height:70px;resize:vertical}
+.f input:focus,.f select:focus,.f textarea:focus{outline:2px solid var(--aqua-2);border-color:var(--aqua)}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px 14px;cursor:pointer;font-weight:500;white-space:nowrap}
+.btn:hover{border-color:var(--ink-3)}
+.btn.pri{background:var(--aqua);border-color:var(--aqua);color:#fff}
+.btn.pri:hover{background:var(--aqua-ink)}
+.btn.dark{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn.danger{color:var(--bad)}
+.btn.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.btn.sm{padding:4px 10px;font-size:12px;border-radius:8px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.monthbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.monthbar .m{font-family:"Zen Maru Gothic",sans-serif;font-size:20px;min-width:130px;text-align:center}
+.monthbar .sp{flex:1}
+.timer{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.timer .clock{font-variant-numeric:tabular-nums;font-size:34px;font-weight:700;letter-spacing:.02em;min-width:150px}
+.timer .clock.run{color:var(--aqua)}
+table.t{width:100%;border-collapse:collapse;font-size:13px}
+table.t th{text-align:left;font-weight:500;color:var(--ink-3);font-size:11px;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+table.t td{padding:8px;border-bottom:1px solid var(--tile);vertical-align:top}
+table.t td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+table.t tr.ex td{color:var(--ink-3)}
+.tablewrap{overflow-x:auto;margin:0 -4px}
+.empty{color:var(--ink-3);text-align:center;padding:26px 8px;font-size:13px}
+.sum dl{margin:0;display:grid;grid-template-columns:1fr auto;gap:6px 12px}
+.sum dt{color:var(--ink-2)}
+.sum dd{margin:0;text-align:right;font-variant-numeric:tabular-nums}
+.sum .total{border-top:1px solid var(--line);padding-top:8px;margin-top:4px;font-weight:700;font-size:16px}
+.note{font-size:12px;color:var(--ink-3)}
+.bar{height:6px;border-radius:99px;background:var(--tile);overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--aqua)}
+.bar.over>i{background:var(--bad)}
+.stack{display:flex;flex-direction:column;gap:16px;min-width:0}
+/* kanban */
+.kb-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.kb-tools .sp{flex:1}
+.kanban{display:grid;grid-template-columns:repeat(var(--cols,6),minmax(220px,1fr));gap:12px;overflow-x:auto;padding-bottom:8px;-webkit-overflow-scrolling:touch}
+.col{background:var(--tile);border-radius:var(--radius);padding:10px;min-height:120px}
+.col h3{font-size:12px;margin:2px 4px 10px;display:flex;justify-content:space-between;color:var(--ink-2)}
+.vcard{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;cursor:pointer;box-shadow:var(--shadow)}
+.vcard:hover{border-color:var(--aqua)}
+.vcard .no{font-size:11px;color:var(--ink-3)}
+.vcard .ttl{font-weight:700;margin:2px 0 4px;line-height:1.4}
+.vcard .word{font-size:12px;color:var(--aqua-ink);margin-bottom:6px}
+.vcard .meta{display:flex;flex-wrap:wrap;gap:4px}
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(29,42,58,.38);display:none;align-items:flex-start;justify-content:center;z-index:50;padding:40px 12px;overflow-y:auto}
+.modal.open{display:flex}
+.sheet{background:var(--card);border-radius:18px;width:100%;max-width:720px;padding:20px;box-shadow:0 20px 50px rgba(0,0,0,.18)}
+.sheet h2{margin:0 0 4px;font-size:18px;font-family:"Zen Maru Gothic",sans-serif}
+.sheet .head{display:flex;gap:10px;align-items:flex-start;margin-bottom:14px}
+.sheet .head .sp{flex:1}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fgrid .full{grid-column:1/-1}
+@media (max-width:560px){.fgrid{grid-template-columns:1fr}}
+.kv{display:grid;grid-template-columns:120px 1fr;gap:6px 12px;font-size:13px;margin-bottom:14px}
+.kv dt{color:var(--ink-3)} .kv dd{margin:0;word-break:break-all}
+.timeline{border-left:2px solid var(--tile);margin:8px 0 12px 6px;padding-left:14px}
+.tl{margin-bottom:12px;position:relative}
+.tl:before{content:"";position:absolute;left:-20px;top:6px;width:10px;height:10px;border-radius:50%;background:var(--aqua-2);border:2px solid var(--aqua)}
+.tl .by{font-size:11px;color:var(--ink-3)}
+.tl .body{white-space:pre-wrap;word-break:break-word}
+.actions{display:flex;gap:8px;flex-wrap:wrap;padding:12px;background:var(--bg);border-radius:12px;margin-bottom:14px}
+.sec-title{font-size:12px;font-weight:700;color:var(--ink-2);margin:16px 0 8px;letter-spacing:.04em}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:12px;z-index:80;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw}
+.toast.show{opacity:1}
+.toast.err{background:var(--bad)}
+.loading{opacity:.55;pointer-events:none}
+.hide{display:none!important}
+.radio{display:flex;gap:14px;flex-wrap:wrap;font-size:13px}
+.radio label{display:flex;gap:6px;align-items:center;cursor:pointer}
+/* PDF */
+.pdfroot{width:794px;padding:56px 60px;background:#fff;color:#111;font-family:"Noto Sans JP",sans-serif;font-size:12px;line-height:1.6}
+.pdfroot h1{font-size:24px;letter-spacing:.4em;text-align:center;margin:0 0 24px;font-weight:700}
+.pdfroot .two{display:flex;justify-content:space-between;gap:24px;margin-bottom:22px}
+.pdfroot .to{font-size:16px;border-bottom:1px solid #111;padding-bottom:4px;min-width:280px}
+.pdfroot table{width:100%;border-collapse:collapse;margin-bottom:14px}
+.pdfroot th,.pdfroot td{border:1px solid #999;padding:6px 8px;font-size:11.5px}
+.pdfroot th{background:#eef3f3;font-weight:500}
+.pdfroot td.n{text-align:right;white-space:nowrap}
+.pdfroot .big{display:flex;align-items:baseline;gap:18px;border-bottom:2px solid #111;padding:6px 0;margin:6px 0 20px;width:60%}
+.pdfroot .big b{font-size:22px}
+.pdfroot .small{font-size:10.5px;color:#444}
+.pdfroot .box{border:1px solid #999;padding:8px 10px;margin-bottom:12px;white-space:pre-wrap}
+.pb{page-break-before:always;break-before:page}
+/* iPhone / iPad：入力欄の文字が16px未満だと、タップ時にSafariが勝手に拡大する */
+@media (max-width:1100px){.f input,.f select,.f textarea{font-size:16px}}
+/* スマホ幅 */
+@media (max-width:600px){
+  header.top{position:static}
+  .top-in{gap:10px;padding:10px 12px}
+  .brand{flex:1 1 auto}
+  .brand small{display:none}
+  .tabs{order:3;flex:1 1 100%}
+  .tabs button{flex:1;padding:9px 8px}
+  main{padding:14px 12px 80px}
+  .card{padding:14px}
+  .row .f{flex:1 1 140px;width:auto!important;min-width:0}
+  .row>.btn{flex:1 1 100%;padding:11px 14px}
+  .timer{flex-direction:column;align-items:stretch;gap:8px}
+  .timer .clock{font-size:30px;min-width:0;text-align:center}
+  .tablewrap table.t{min-width:600px}
+  .who{margin-left:auto}
+  .monthbar .m{min-width:0;font-size:18px}
+  #workerWrap{flex:1 1 100%;width:auto!important}
+  .kanban{grid-template-columns:repeat(var(--cols,6),minmax(78vw,1fr));scroll-snap-type:x mandatory}
+  .col{scroll-snap-align:start}
+  .modal{padding:12px 8px}
+  .sheet{padding:16px;border-radius:14px}
+  .kv{grid-template-columns:1fr}
+  .kv dt{margin-top:6px}
+  .actions .btn{flex:1 1 100%}
+  .btn.sm{padding:6px 10px}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <div class="mark" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 12h18v3a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5v-3z"/><path d="M6 12V6a2 2 0 0 1 4 0"/><path d="M8 20l-1 2M16 20l1 2"/></svg>
+      </div>
+      <div style="min-width:0">
+        <h1>お風呂ワード制作室</h1>
+        <small id="projName"></small>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button data-tab="att" class="on">勤務管理</button>
+      <button data-tab="vid">動画納品管理</button>
+    </nav>
+    <div class="who">
+      <span class="chip aqua" id="meChip"></span>
+      <button class="iconbtn" id="btnSettings" title="設定" aria-label="設定">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="banner hide" id="demoBanner">
+    <b>デモモード</b>　データはこのブラウザ内だけに保存されています。GitHubと連携すると3人で共有できます。
+    <button class="btn sm" id="btnGoSettings">GitHubと連携する</button>
+  </div>
+
+  <!-- ========== 勤務管理 ========== -->
+  <section id="tab-att">
+    <div class="monthbar">
+      <button class="btn sm" id="mPrev" aria-label="前月">‹</button>
+      <div class="m" id="mLabel"></div>
+      <button class="btn sm" id="mNext" aria-label="翌月">›</button>
+      <span id="wlStatus"></span>
+      <div class="sp"></div>
+      <div class="f" style="width:160px" id="workerWrap"><label>受託者</label><select id="workerSel"></select></div>
+    </div>
+
+    <div class="grid g-att">
+      <div class="stack">
+        <div class="card" id="timerCard">
+          <h2>⏱ 作業タイマー<span class="sp"></span><span class="note">止めると1分単位で記録されます</span></h2>
+          <div class="timer">
+            <div class="clock" id="clock">0:00:00</div>
+            <div class="row" style="flex:1">
+              <div class="f" style="width:130px"><label>業務区分</label><select id="tCat"></select></div>
+              <div class="f" style="width:200px"><label>関連する動画（個別契約）</label><select id="tIssue"></select></div>
+              <div class="f" style="flex:1;min-width:160px"><label>作業内容</label><input id="tDesc" placeholder="例：カット編集・テロップ"></div>
+              <button class="btn pri" id="tBtn" style="min-width:96px">開始</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 id="formTitle">稼働を手入力</h2>
+          <div class="row">
+            <div class="f" style="width:140px"><label>日付</label><input type="date" id="eDate"></div>
+            <div class="f" style="width:100px"><label>開始</label><input type="time" id="eStart"></div>
+            <div class="f" style="width:100px"><label>終了</label><input type="time" id="eEnd"></div>
+            <div class="f" style="width:80px"><label>休憩(分)</label><input type="number" id="eBreak" min="0" value="0"></div>
+            <div class="f" style="width:130px"><label>業務区分</label><select id="eCat"></select></div>
+            <div class="f" style="width:200px"><label>関連する動画（個別契約）</label><select id="eIssue"></select></div>
+            <div class="f" style="flex:1;min-width:180px"><label>作業内容</label><input id="eDesc"></div>
+          </div>
+          <div class="row" style="margin-top:10px;align-items:center">
+            <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="eFree"> 無償修正の作業（請求対象外・第6条4項）</label>
+            <div style="flex:1"></div>
+            <span class="note" id="eCalc"></span>
+            <button class="btn hide" id="eCancel">キャンセル</button>
+            <button class="btn dark" id="eSave">追加</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>稼働明細<span class="sp"></span><span class="note" id="entryCount"></span></h2>
+          <div class="tablewrap"><table class="t" id="entryTable"></table></div>
+        </div>
+
+        <div class="card">
+          <h2>実費（事前承諾済みのもの）<span class="sp"></span></h2>
+          <div class="row">
+            <div class="f" style="width:140px"><label>日付</label><input type="date" id="xDate"></div>
+            <div class="f" style="flex:1;min-width:160px"><label>内容</label><input id="xDesc" placeholder="例：有料BGM素材（甲承諾済）"></div>
+            <div class="f" style="width:120px"><label>金額（税抜・円）</label><input type="number" id="xAmt" min="0"></div>
+            <button class="btn" id="xAdd">追加</button>
+          </div>
+          <div class="tablewrap" style="margin-top:10px"><table class="t" id="expTable"></table></div>
+        </div>
+      </div>
+
+      <div class="stack">
+        <div class="card sum">
+          <h2>今月の請求額</h2>
+          <dl id="sumDl"></dl>
+          <div class="note" id="sumNote" style="margin-top:10px"></div>
+        </div>
+        <div class="card">
+          <h2>提出・請求書</h2>
+          <div class="stack" style="gap:8px">
+            <button class="btn pri" id="btnPdf">請求書PDFをダウンロード</button>
+            <button class="btn" id="btnPdfSave">PDFをGitHubに保存して提出</button>
+            <div class="row hide" id="ownerActs" style="gap:8px">
+              <button class="btn ok" id="btnApprove" style="flex:1">承認する</button>
+              <button class="btn danger" id="btnReturn" style="flex:1">差し戻す</button>
+            </div>
+          </div>
+          <div class="note" id="deadlineNote" style="margin-top:10px"></div>
+        </div>
+        <div class="card">
+          <h2>個別契約ごとの上限</h2>
+          <div id="capList" class="stack" style="gap:12px"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 動画納品管理 ========== -->
+  <section id="tab-vid" class="hide">
+    <div class="kb-tools">
+      <button class="btn pri" id="btnNewVideo">＋ 新規発注</button>
+      <button class="btn" id="btnReload">再読み込み</button>
+      <label style="display:flex;gap:6px;align-items:center;font-size:13px"><input type="checkbox" id="hidePub" checked> 公開済を隠す</label>
+      <div class="sp"></div>
+      <span class="note" id="repoLink"></span>
+    </div>
+    <div class="kanban" id="kanban"></div>
+  </section>
+</main>
+
+<!-- detail / form modal -->
+<div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   基本ユーティリティ
+   ========================================================= */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+  del(k) { try { localStorage.removeItem(k); } catch {} }
+};
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const yen = n => Math.floor(n).toLocaleString('ja-JP');
+const pad = n => String(n).padStart(2, '0');
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const hm = d => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+const ym = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}`;
+const fmtHM = m => `${Math.floor(m/60)}時間${pad(m%60)}分`;
+const fmtShort = m => `${Math.floor(m/60)}:${pad(m%60)}`;
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const b64enc = s => btoa(unescape(encodeURIComponent(s)));
+const b64dec = s => decodeURIComponent(escape(atob(String(s).replace(/\s/g, ''))));
+const parseDate = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); };
+const fmtJP = s => { if (!s) return '—'; const d = new Date(s); return `${d.getMonth()+1}/${d.getDate()}`; };
+const fmtJPFull = d => `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
+const daysBetween = (a, b) => Math.ceil((b - a) / 86400000);
+function linkify(t) {
+  return esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+    .replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener">$1</a>');
+}
+function toast(msg, err) {
+  const t = $('#toast'); t.textContent = msg; t.className = 'toast show' + (err ? ' err' : '');
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.className = 'toast', err ? 5000 : 2400);
+}
+// 前営業日（土日のみ考慮）
+function prevBizDay(d) { const x = new Date(d); while (x.getDay() === 0 || x.getDay() === 6) x.setDate(x.getDate() - 1); return x; }
+function monthEnd(month) { const [y,m] = month.split('-').map(Number); return new Date(y, m, 0); }
+function nextMonthDay(month, day) { const [y,m] = month.split('-').map(Number); return new Date(y, m, day); }
+
+/* =========================================================
+   共有設定（リポジトリ seisaku/settings.json）
+   ========================================================= */
+const DEFAULT_SETTINGS = {
+  project: 'Fuyantrech｜お風呂で思いついた単語でアプリを作る会',
+  rate: 1182,              // 第6条1項 時間単価（税別）
+  taxRate: 0.10,
+  freeRevisions: 2,        // 第5条3項 無償修正回数
+  inspectionDays: 7,       // 第5条2項 検収期間
+  reportDay: 5,            // 第7条1項 翌月5日
+  payDay: 25,              // 第7条3項 翌月25日
+  client: 'PIRTIDA　髙田 こうた',
+  categories: ['動画編集', 'DX業務補助'],
+  members: [
+    { id: 'kota',       name: 'こうた', role: 'owner',   gh: '' },
+    { id: 'tomidokoro', name: '富所',   role: 'editor',  gh: '' },
+    { id: 'fuya',       name: 'ふうや', role: 'partner', gh: '' }
+  ]
+};
+const ROLE_LABEL = { owner: '発注者', editor: '編集担当', partner: 'パートナー' };
+
+const STATUSES = [
+  { key: 'ordered',   label: '発注済' },
+  { key: 'editing',   label: '編集中' },
+  { key: 'review',    label: '検収待ち' },
+  { key: 'revising',  label: '修正中' },
+  { key: 'accepted',  label: '検収合格' },
+  { key: 'published', label: '公開済' }
+];
+const ST = Object.fromEntries(STATUSES.map(s => [s.key, s]));
+const statusLabel = k => '編集:' + ST[k].label;
+const BASE_LABEL = '編集発注';
+const DATA = 'seisaku/'; // 稼働記録・請求書・共有設定の保存先（企画の videos/ とは分ける）
+
+/* =========================================================
+   バックエンド：GitHub / デモ（localStorage）
+   ========================================================= */
+class GitHubBackend {
+  constructor(c) { this.c = c; this.rp = `/repos/${c.owner}/${c.repo}`; this.demo = false; }
+  async req(method, path, body) {
+    const r = await fetch('https://api.github.com' + path, {
+      method, cache: 'no-store',
+      headers: {
+        Authorization: 'Bearer ' + this.c.token,
+        Accept: 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+        ...(body ? { 'Content-Type': 'application/json' } : {})
+      },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    if (!r.ok) {
+      let msg = ''; try { msg = (await r.json()).message; } catch {}
+      const e = new Error(`GitHub ${r.status}${msg ? '：' + msg : ''}`); e.status = r.status; throw e;
+    }
+    return r.status === 204 ? null : r.json();
+  }
+  p(path) { return path.split('/').map(encodeURIComponent).join('/'); }
+  ref() { return `?ref=${encodeURIComponent(this.c.branch || 'main')}`; }
+  async readJSON(path) {
+    try { const j = await this.req('GET', `${this.rp}/contents/${this.p(path)}${this.ref()}`); return { data: JSON.parse(b64dec(j.content)), sha: j.sha }; }
+    catch (e) { if (e.status === 404) return { data: null, sha: null }; throw e; }
+  }
+  async getSha(path) {
+    try { return (await this.req('GET', `${this.rp}/contents/${this.p(path)}${this.ref()}`)).sha; }
+    catch (e) { if (e.status === 404) return null; throw e; }
+  }
+  async writeB64(path, content, sha, message) {
+    return this.req('PUT', `${this.rp}/contents/${this.p(path)}`, { message, content, branch: this.c.branch || 'main', ...(sha ? { sha } : {}) });
+  }
+  async listDir(path) {
+    try { return (await this.req('GET', `${this.rp}/contents/${this.p(path)}${this.ref()}`)).map(x => ({ name: x.name, type: x.type })); }
+    catch (e) { if (e.status === 404) return []; throw e; }
+  }
+  async listIssues() {
+    let all = [], page = 1;
+    while (true) {
+      const r = await this.req('GET', `${this.rp}/issues?labels=${encodeURIComponent(BASE_LABEL)}&state=all&per_page=100&page=${page}`);
+      all = all.concat(r.filter(x => !x.pull_request));
+      if (r.length < 100) break; page++;
+    }
+    return all;
+  }
+  getIssue(n) { return this.req('GET', `${this.rp}/issues/${n}`); }
+  createIssue(o) { return this.req('POST', `${this.rp}/issues`, o); }
+  updateIssue(n, o) { return this.req('PATCH', `${this.rp}/issues/${n}`, o); }
+  listComments(n) { return this.req('GET', `${this.rp}/issues/${n}/comments?per_page=100`); }
+  addComment(n, body) { return this.req('POST', `${this.rp}/issues/${n}/comments`, { body }); }
+  whoami() { return this.req('GET', '/user'); }
+  repoInfo() { return this.req('GET', this.rp); }
+  async ensureLabels() {
+    const want = [{ name: BASE_LABEL, color: '1f8a8c' }, ...STATUSES.map((s, i) => ({ name: statusLabel(s.key), color: ['c5def5','fbca04','0e8a16','d93f0b','5319e7','1d2a3a'][i] }))];
+    const have = await this.req('GET', `${this.rp}/labels?per_page=100`);
+    for (const l of want) if (!have.some(h => h.name === l.name)) await this.req('POST', `${this.rp}/labels`, l);
+  }
+  issueUrl(n) { return `https://github.com/${this.c.owner}/${this.c.repo}/issues/${n}`; }
+  repoUrl() { return `https://github.com/${this.c.owner}/${this.c.repo}`; }
+}
+
+class DemoBackend {
+  constructor() { this.demo = true; this.s = LS.get('fy_demo', null) || this.seed(); }
+  save() { LS.set('fy_demo', this.s); }
+  seed() {
+    const now = new Date(); const d = n => { const x = new Date(now); x.setDate(x.getDate() + n); return x; };
+    const meta1 = { episode: 1, word: 'あわあわ', spec: 'アプリ「あわあわタイマー」開発の様子を15分程度に。冒頭30秒でワードの紹介。', length: '10〜20分', rawUrl: 'https://drive.google.com/…', due: ymd(d(5)), capHours: 8, fixedFee: 0, assignee: 'tomidokoro', deliveries: [], revisions: [], publishedUrl: '' };
+    const meta2 = { ...meta1, episode: 2, word: 'ゆけむり', spec: '湯けむりエフェクトのカメラアプリ回。', due: ymd(d(12)), capHours: 6, deliveries: [] };
+    const s = { files: {}, issues: [], comments: {}, n: 0 };
+    this.s = s;
+    const mk = (title, meta, st) => { const n = ++s.n; s.issues.push({ number: n, title, state: 'open', html_url: '#', labels: [{ name: BASE_LABEL }, { name: statusLabel(st) }], body: buildBody(meta), created_at: now.toISOString(), user: { login: 'kota' } }); s.comments[n] = []; return n; };
+    mk('あわあわタイマー', meta1, 'editing');
+    mk('ゆけむりカメラ', meta2, 'ordered');
+    return s;
+  }
+  async readJSON(path) { const f = this.s.files[path]; return f ? { data: JSON.parse(b64dec(f.content)), sha: f.sha } : { data: null, sha: null }; }
+  async getSha(path) { return this.s.files[path]?.sha || null; }
+  async writeB64(path, content, sha) {
+    const cur = this.s.files[path];
+    if (cur && cur.sha !== sha) { const e = new Error('conflict'); e.status = 409; throw e; }
+    this.s.files[path] = { content, sha: uid() }; this.save(); return {};
+  }
+  async listDir(path) {
+    const pre = path.replace(/\/$/, '') + '/'; const out = new Map();
+    for (const k of Object.keys(this.s.files)) if (k.startsWith(pre)) { const rest = k.slice(pre.length); const name = rest.split('/')[0]; out.set(name, rest.includes('/') ? 'dir' : 'file'); }
+    return [...out].map(([name, type]) => ({ name, type }));
+  }
+  async listIssues() { return JSON.parse(JSON.stringify(this.s.issues)).reverse(); }
+  async getIssue(n) { return JSON.parse(JSON.stringify(this.s.issues.find(i => i.number === n))); }
+  async createIssue(o) { const n = ++this.s.n; const i = { number: n, title: o.title, body: o.body, state: 'open', html_url: '#', labels: o.labels.map(name => ({ name })), created_at: new Date().toISOString(), user: { login: me().name } }; this.s.issues.push(i); this.s.comments[n] = []; this.save(); return i; }
+  async updateIssue(n, o) { const i = this.s.issues.find(x => x.number === n); if (o.title != null) i.title = o.title; if (o.body != null) i.body = o.body; if (o.state) i.state = o.state; if (o.labels) i.labels = o.labels.map(name => ({ name })); this.save(); return i; }
+  async listComments(n) { return this.s.comments[n] || []; }
+  async addComment(n, body) { (this.s.comments[n] ||= []).push({ body, created_at: new Date().toISOString(), user: { login: me().name } }); this.save(); }
+  async whoami() { return { login: 'demo' }; }
+  async ensureLabels() {}
+  issueUrl() { return null; }
+  repoUrl() { return null; }
+}
+
+/* =========================================================
+   状態
+   ========================================================= */
+const state = {
+  cfg: LS.get('fy_cfg', { owner: 'kotatakata', repo: 'fuyantech', branch: 'main', token: '', me: 'tomidokoro' }),
+  issuer: LS.get('fy_issuer', null),
+  settings: { ...DEFAULT_SETTINGS }, settingsSha: null,
+  month: ym(new Date()),
+  worker: null,
+  worklogs: {},   // key `${worker}/${month}` -> {data, sha}
+  issues: [],
+  tab: LS.get('fy_tab', 'att'),
+  editingId: null
+};
+let api;
+const me = () => state.settings.members.find(m => m.id === state.cfg.me) || state.settings.members[0];
+const memberName = id => state.settings.members.find(m => m.id === id)?.name || id || '—';
+const editors = () => state.settings.members.filter(m => m.role === 'editor');
+const isOwner = () => me().role === 'owner';
+
+/* =========================================================
+   動画Issue：メタデータ
+   ========================================================= */
+function buildBody(meta) {
+  const json = JSON.stringify(meta, null, 1).replace(/-->/g, '--\\u003e');
+  const rows = [
+    ['回', meta.episode ? `第${meta.episode}回` : '—'],
+    ['お風呂ワード', meta.word || '—'],
+    ['納期', meta.due || '—'],
+    ['尺の目安', meta.length || '—'],
+    ['上限稼働時間', meta.capHours ? `${meta.capHours}時間` : 'なし'],
+    ['報酬形態', meta.fixedFee ? `固定額 ${yen(meta.fixedFee)}円（税別）` : '時間単価'],
+    ['担当', memberName(meta.assignee)],
+    ['撮影素材', meta.rawUrl || '—'],
+    ['最新の納品物', meta.deliveries?.length ? meta.deliveries.at(-1).url : '—'],
+    ['公開URL', meta.publishedUrl || '—']
+  ];
+  return `<!-- fy-meta\n${json}\n-->\n\n### 🛁 お風呂ワード：${meta.word || ''}\n\n#### 仕様・指示\n${meta.spec || '（なし）'}\n\n| 項目 | 内容 |\n|---|---|\n${rows.map(r => `| ${r[0]} | ${String(r[1]).replace(/\|/g, '｜')} |`).join('\n')}\n\n---\n<sub>このIssueは「お風呂ワード制作室」から更新されます。先頭のメタデータは手で編集しないでください。</sub>`;
+}
+function parseIssue(gh) {
+  const m = /<!-- fy-meta\s*([\s\S]*?)\s*-->/.exec(gh.body || '');
+  let meta = {}; try { if (m) meta = JSON.parse(m[1]); } catch {}
+  meta.deliveries ||= []; meta.revisions ||= [];
+  const names = (gh.labels || []).map(l => typeof l === 'string' ? l : l.name);
+  const st = STATUSES.find(s => names.includes(statusLabel(s.key)))?.key || 'ordered';
+  return { number: gh.number, title: gh.title, url: gh.html_url, state: gh.state, status: st, meta, labels: names, created: gh.created_at };
+}
+
+/* =========================================================
+   稼働ログ（worklog/{worker}/{YYYY-MM}.json）
+   ========================================================= */
+const wlPath = (w, m) => `${DATA}worklog/${w}/${m}.json`;
+const emptyWL = (w, m) => ({ worker: w, month: m, entries: [], expenses: [], status: 'draft', history: [] });
+async function loadWorklogs(worker) {
+  const files = await api.listDir(`${DATA}worklog/${worker}`);
+  const months = files.filter(f => f.type === 'file' && /^\d{4}-\d{2}\.json$/.test(f.name)).map(f => f.name.slice(0, 7));
+  if (!months.includes(state.month)) months.push(state.month);
+  await Promise.all(months.map(async m => {
+    const r = await api.readJSON(wlPath(worker, m));
+    state.worklogs[`${worker}/${m}`] = { data: r.data || emptyWL(worker, m), sha: r.sha };
+  }));
+}
+function curWL() {
+  const k = `${state.worker}/${state.month}`;
+  return (state.worklogs[k] ||= { data: emptyWL(state.worker, state.month), sha: null }).data;
+}
+// 最新を取得→変更を適用→保存（競合時は最大3回リトライ）
+async function mutateWL(fn, message) {
+  const w = state.worker, m = state.month, path = wlPath(w, m);
+  for (let i = 0; i < 3; i++) {
+    const r = await api.readJSON(path);
+    const data = r.data || emptyWL(w, m);
+    const res = fn(data);
+    if (res === false) return;
+    try {
+      await api.writeB64(path, b64enc(JSON.stringify(data, null, 2)), r.sha, `${message}（${me().name}）`);
+      state.worklogs[`${w}/${m}`] = { data, sha: null };
+      const fresh = await api.readJSON(path); state.worklogs[`${w}/${m}`].sha = fresh.sha;
+      return;
+    } catch (e) { if (e.status !== 409 && e.status !== 422) throw e; }
+  }
+  throw new Error('他の人の更新と競合しました。再読み込みしてください。');
+}
+
+/* 請求計算：上限・無償修正・固定額を反映 */
+function computeBilling() {
+  const all = [];
+  for (const [k, v] of Object.entries(state.worklogs)) if (k.startsWith(state.worker + '/')) all.push(...v.data.entries);
+  all.sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start));
+  const used = {}, res = {};
+  const iss = Object.fromEntries(state.issues.map(i => [i.number, i]));
+  for (const e of all) {
+    const I = e.issue ? iss[e.issue] : null;
+    if (e.free) { res[e.id] = { bill: 0, reason: '無償修正' }; continue; }
+    if (I && I.meta.fixedFee) { res[e.id] = { bill: 0, reason: '固定額案件' }; used[e.issue] = (used[e.issue] || 0) + e.minutes; continue; }
+    if (I && I.meta.capHours) {
+      const cap = I.meta.capHours * 60, u = used[e.issue] || 0;
+      used[e.issue] = u + e.minutes;
+      if (e.overApproved) { res[e.id] = { bill: e.minutes, reason: u + e.minutes > cap ? '上限超過（承認済）' : '' }; continue; }
+      const ok = Math.max(0, Math.min(e.minutes, cap - u));
+      res[e.id] = { bill: ok, reason: ok < e.minutes ? `上限超過 ${e.minutes - ok}分（未承認）` : '' };
+      continue;
+    }
+    if (e.issue) used[e.issue] = (used[e.issue] || 0) + e.minutes;
+    res[e.id] = { bill: e.minutes, reason: '' };
+  }
+  return { res, used };
+}
+function monthSummary() {
+  const S = state.settings, wl = curWL(), { res, used } = computeBilling();
+  const total = wl.entries.reduce((a, e) => a + e.minutes, 0);
+  const bill = wl.entries.reduce((a, e) => a + (res[e.id]?.bill ?? e.minutes), 0);
+  const byCat = {};
+  for (const e of wl.entries) { const b = res[e.id]?.bill ?? e.minutes; byCat[e.category] = (byCat[e.category] || 0) + b; }
+  const hourly = Math.floor(bill * S.rate / 60);                         // 第6条2項 月合計→1円未満切捨て
+  const fixed = state.issues.filter(i => i.meta.fixedFee && i.meta.assignee === state.worker && i.meta.acceptedAt && ym(new Date(i.meta.acceptedAt)) === state.month)
+    .map(i => ({ label: `固定額：${i.title}`, amount: Number(i.meta.fixedFee) }));
+  const fixedSum = fixed.reduce((a, f) => a + f.amount, 0);
+  const exps = wl.expenses.filter(x => x.approved);
+  const expSum = exps.reduce((a, x) => a + Number(x.amount || 0), 0);
+  const sub = hourly + fixedSum + expSum;
+  const tax = Math.floor(sub * S.taxRate);
+  const issuer = getIssuer();
+  const wh = issuer.withholding ? Math.floor((hourly + fixedSum) * (hourly + fixedSum > 1000000 ? 0.2042 : 0.1021)) : 0;
+  return { total, bill, excluded: total - bill, byCat, hourly, fixed, fixedSum, exps, expSum, sub, tax, wh, grand: sub + tax - wh, res, used };
+}
+
+/* =========================================================
+   勤務管理 UI
+   ========================================================= */
+function issueOptions(sel) {
+  const open = state.issues.filter(i => i.status !== 'published' || i.number == sel);
+  return `<option value="">（なし）</option>` + open.map(i => `<option value="${i.number}" ${i.number == sel ? 'selected' : ''}>#${i.number} ${esc(i.title)}</option>`).join('');
+}
+function catOptions(sel) { return state.settings.categories.map(c => `<option ${c === sel ? 'selected' : ''}>${esc(c)}</option>`).join(''); }
+function locked() { const s = curWL().status; return s !== 'draft' && !isOwner(); }
+
+function renderAtt() {
+  const [y, m] = state.month.split('-').map(Number);
+  $('#mLabel').textContent = `${y}年${m}月`;
+  const ws = $('#workerSel');
+  ws.innerHTML = editors().map(e => `<option value="${e.id}" ${e.id === state.worker ? 'selected' : ''}>${esc(e.name)}</option>`).join('');
+  $('#workerWrap').classList.toggle('hide', editors().length < 2 && !isOwner());
+
+  const wl = curWL();
+  const stMap = { draft: ['下書き', ''], submitted: ['提出済（承認待ち）', 'warn'], approved: ['承認済', 'ok'] };
+  const [sl, sc] = stMap[wl.status] || stMap.draft;
+  $('#wlStatus').innerHTML = `<span class="chip ${sc}">${sl}</span>`;
+
+  // フォーム
+  const tCat = $('#tCat'), eCat = $('#eCat');
+  const timer = LS.get('fy_timer', null);
+  tCat.innerHTML = catOptions(timer?.category); eCat.innerHTML = catOptions(eCat.value || state.settings.categories[0]);
+  $('#tIssue').innerHTML = issueOptions(timer?.issue);
+  const eIssueVal = $('#eIssue').value; $('#eIssue').innerHTML = issueOptions(eIssueVal);
+  if (timer) $('#tDesc').value = timer.desc || '';
+  if (!$('#eDate').value) $('#eDate').value = ymd(new Date());
+  if (!$('#xDate').value) $('#xDate').value = ymd(new Date());
+  const lk = locked();
+  $$('#timerCard input,#timerCard select,#timerCard button,#eSave,#xAdd').forEach(x => x.disabled = lk);
+  updateClock();
+
+  // 明細
+  const S = monthSummary();
+  const rows = [...wl.entries].sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start));
+  $('#entryCount').textContent = `${rows.length}件`;
+  $('#entryTable').innerHTML = rows.length ? `<thead><tr><th>日付</th><th>時間</th><th>区分</th><th>作業内容</th><th>動画</th><th style="text-align:right">稼働</th><th style="text-align:right">請求対象</th><th></th></tr></thead><tbody>` +
+    rows.map(e => {
+      const r = S.res[e.id] || { bill: e.minutes, reason: '' };
+      const capBtn = isOwner() && /未承認/.test(r.reason) ? `<button class="btn sm" data-approve="${e.id}">超過を承認</button>` : '';
+      return `<tr class="${r.bill < e.minutes ? 'ex' : ''}"><td>${e.date.slice(5).replace('-', '/')}</td><td>${e.start || ''}–${e.end || ''}${e.breakMin ? `<br><span class="note">休憩${e.breakMin}分</span>` : ''}</td><td>${esc(e.category)}</td><td>${esc(e.desc)}${r.reason ? `<br><span class="chip ${/未承認/.test(r.reason) ? 'bad' : ''}">${esc(r.reason)}</span>` : ''}</td><td>${e.issue ? '#' + e.issue : ''}</td><td class="num">${fmtShort(e.minutes)}</td><td class="num">${fmtShort(r.bill)}</td>
+      <td style="white-space:nowrap">${capBtn}${lk ? '' : `<button class="btn sm" data-edit="${e.id}">編集</button> <button class="btn sm danger" data-del="${e.id}">削除</button>`}</td></tr>`;
+    }).join('') + '</tbody>' : `<tr><td class="empty">まだ稼働の記録がありません。タイマーか手入力で追加してください。</td></tr>`;
+
+  // 実費
+  $('#expTable').innerHTML = wl.expenses.length ? `<thead><tr><th>日付</th><th>内容</th><th style="text-align:right">金額</th><th>承諾</th><th></th></tr></thead><tbody>` +
+    wl.expenses.map(x => `<tr><td>${x.date.slice(5).replace('-', '/')}</td><td>${esc(x.desc)}</td><td class="num">${yen(x.amount)}円</td><td>${x.approved ? '<span class="chip ok">承諾済</span>' : (isOwner() ? `<button class="btn sm" data-xok="${x.id}">承諾</button>` : '<span class="chip warn">確認待ち</span>')}</td><td>${lk ? '' : `<button class="btn sm danger" data-xdel="${x.id}">削除</button>`}</td></tr>`).join('') + '</tbody>'
+    : `<tr><td class="empty" style="padding:12px">実費はありません</td></tr>`;
+
+  // 集計
+  const st = state.settings;
+  $('#sumDl').innerHTML = `
+    <dt>稼働時間 合計</dt><dd>${fmtHM(S.total)}</dd>
+    ${S.excluded ? `<dt>うち請求対象外</dt><dd>−${fmtHM(S.excluded)}</dd>` : ''}
+    <dt>請求対象時間</dt><dd>${fmtHM(S.bill)}</dd>
+    <dt>× ${yen(st.rate)}円</dt><dd>${yen(S.hourly)}円</dd>
+    ${S.fixed.map(f => `<dt>${esc(f.label)}</dt><dd>${yen(f.amount)}円</dd>`).join('')}
+    ${S.expSum ? `<dt>実費</dt><dd>${yen(S.expSum)}円</dd>` : ''}
+    <dt>小計（税抜）</dt><dd>${yen(S.sub)}円</dd>
+    <dt>消費税（${Math.round(st.taxRate * 100)}%）</dt><dd>${yen(S.tax)}円</dd>
+    ${S.wh ? `<dt>源泉徴収税</dt><dd>−${yen(S.wh)}円</dd>` : ''}
+    <dt class="total">請求額</dt><dd class="total">${yen(S.grand)}円</dd>`;
+  $('#sumNote').textContent = Object.keys(S.byCat).length > 1 ? '区分別：' + Object.entries(S.byCat).map(([c, v]) => `${c} ${fmtShort(v)}`).join('／') : '';
+
+  const rep = nextMonthDay(state.month, st.reportDay), pay = prevBizDay(nextMonthDay(state.month, st.payDay));
+  let dl = `稼働報告の提出期限：${fmtJPFull(rep)}<br>支払期日：${fmtJPFull(pay)}`;
+  if (wl.status === 'submitted' && wl.submittedAt) {
+    const auto = new Date(wl.submittedAt); auto.setDate(auto.getDate() + 7);
+    dl += `<br>提出日：${fmtJPFull(new Date(wl.submittedAt))}（${fmtJPFull(auto)}までに異議がなければ承認とみなされます）`;
+  }
+  if (wl.status === 'approved' && wl.approvedAt) dl += `<br>承認日：${fmtJPFull(new Date(wl.approvedAt))}`;
+  $('#deadlineNote').innerHTML = dl;
+  $('#ownerActs').classList.toggle('hide', !(isOwner() && wl.status === 'submitted'));
+  $('#btnPdfSave').textContent = wl.status === 'draft' ? 'PDFをGitHubに保存して提出' : 'PDFを再保存';
+  $('#btnPdfSave').disabled = api.demo && false;
+
+  // 上限
+  const capIssues = state.issues.filter(i => i.meta.assignee === state.worker && (i.meta.capHours || i.meta.fixedFee) && i.status !== 'published');
+  $('#capList').innerHTML = capIssues.length ? capIssues.map(i => {
+    const u = S.used[i.number] || 0;
+    if (i.meta.fixedFee) return `<div><div style="display:flex;justify-content:space-between;gap:8px"><span>#${i.number} ${esc(i.title)}</span><span class="note">固定額 ${yen(i.meta.fixedFee)}円</span></div><div class="note">稼働 ${fmtShort(u)}（記録のみ）</div></div>`;
+    const cap = i.meta.capHours * 60, pct = Math.min(100, u / cap * 100);
+    return `<div><div style="display:flex;justify-content:space-between;gap:8px"><span>#${i.number} ${esc(i.title)}</span><span class="note">${fmtShort(u)} / ${i.meta.capHours}:00</span></div><div class="bar ${u > cap ? 'over' : ''}"><i style="width:${pct}%"></i></div>${u > cap * .8 && u <= cap ? '<div class="note" style="color:var(--warn)">上限に近づいています。超える前に発注者へ相談してください（第6条3項）</div>' : ''}${u > cap ? '<div class="note" style="color:var(--bad)">上限を超えています。超過分は承認がないと請求対象外です</div>' : ''}</div>`;
+  }).join('') : '<div class="note">上限が設定された動画はありません</div>';
+}
+
+function updateClock() {
+  const t = LS.get('fy_timer', null), c = $('#clock'), b = $('#tBtn');
+  if (!t) { c.textContent = '0:00:00'; c.classList.remove('run'); b.textContent = '開始'; b.className = 'btn pri'; return; }
+  const s = Math.floor((Date.now() - t.start) / 1000);
+  c.textContent = `${Math.floor(s / 3600)}:${pad(Math.floor(s / 60) % 60)}:${pad(s % 60)}`;
+  c.classList.add('run'); b.textContent = '停止して記録'; b.className = 'btn dark';
+}
+setInterval(updateClock, 1000);
+
+function calcMinutes(start, end, brk) {
+  if (!start || !end) return 0;
+  const [sh, sm] = start.split(':').map(Number), [eh, em] = end.split(':').map(Number);
+  let m = (eh * 60 + em) - (sh * 60 + sm); if (m < 0) m += 1440;
+  return Math.max(0, m - (Number(brk) || 0));
+}
+function updateCalc() { const m = calcMinutes($('#eStart').value, $('#eEnd').value, $('#eBreak').value); $('#eCalc').textContent = m ? `稼働 ${fmtHM(m)}` : ''; }
+['#eStart', '#eEnd', '#eBreak'].forEach(s => $(s).addEventListener('input', updateCalc));
+
+async function guarded(btn, fn) {
+  const el = btn instanceof Element ? btn : null; if (el) el.disabled = true;
+  document.body.classList.add('busy');
+  try { await fn(); } catch (e) { console.error(e); toast(e.message || String(e), true); }
+  finally { if (el) el.disabled = false; }
+}
+
+$('#tBtn').onclick = e => guarded(e.currentTarget, async () => {
+  const t = LS.get('fy_timer', null);
+  if (!t) { LS.set('fy_timer', { start: Date.now(), category: $('#tCat').value, issue: $('#tIssue').value, desc: $('#tDesc').value, worker: state.worker }); updateClock(); return; }
+  const start = new Date(t.start), end = new Date();
+  const minutes = Math.floor((end - start) / 60000);
+  const entry = { id: uid(), date: ymd(start), start: hm(start), end: hm(end), breakMin: 0, minutes, category: $('#tCat').value, issue: $('#tIssue').value ? Number($('#tIssue').value) : null, desc: $('#tDesc').value, free: false, by: me().id, via: 'timer' };
+  LS.del('fy_timer');
+  if (minutes < 1) { toast('1分未満のため記録しませんでした'); renderAtt(); return; }
+  const prevMonth = state.month; state.month = ym(start); const prevWorker = state.worker; state.worker = t.worker || state.worker;
+  try { await mutateWL(d => { d.entries.push(entry); }, `稼働を記録 ${entry.date} ${fmtShort(minutes)}`); }
+  finally { state.month = prevMonth; state.worker = prevWorker; }
+  $('#tDesc').value = '';
+  toast(`${fmtHM(minutes)} を記録しました`); renderAtt();
+});
+['#tCat', '#tIssue', '#tDesc'].forEach(s => $(s).addEventListener('change', () => { const t = LS.get('fy_timer', null); if (t) { t.category = $('#tCat').value; t.issue = $('#tIssue').value; t.desc = $('#tDesc').value; LS.set('fy_timer', t); } }));
+
+function resetForm() {
+  state.editingId = null; $('#formTitle').textContent = '稼働を手入力'; $('#eSave').textContent = '追加'; $('#eCancel').classList.add('hide');
+  $('#eStart').value = ''; $('#eEnd').value = ''; $('#eBreak').value = 0; $('#eDesc').value = ''; $('#eFree').checked = false; updateCalc();
+}
+$('#eCancel').onclick = resetForm;
+$('#eSave').onclick = e => guarded(e.currentTarget, async () => {
+  const date = $('#eDate').value, start = $('#eStart').value, end = $('#eEnd').value, brk = Number($('#eBreak').value) || 0;
+  const minutes = calcMinutes(start, end, brk);
+  if (!date || !minutes) return toast('日付・開始・終了を入力してください', true);
+  if (ym(parseDate(date)) !== state.month) return toast(`${state.month.replace('-', '年')}月の日付を入力してください（月を切り替えてから入力）`, true);
+  const data = { date, start, end, breakMin: brk, minutes, category: $('#eCat').value, issue: $('#eIssue').value ? Number($('#eIssue').value) : null, desc: $('#eDesc').value, free: $('#eFree').checked };
+  const id = state.editingId;
+  await mutateWL(d => {
+    if (id) { const x = d.entries.find(e => e.id === id); if (!x) return false; Object.assign(x, data, { overApproved: x.overApproved && x.issue === data.issue }); }
+    else d.entries.push({ id: uid(), ...data, by: me().id, via: 'manual' });
+  }, id ? `稼働を修正 ${date}` : `稼働を追加 ${date} ${fmtShort(minutes)}`);
+  toast(id ? '修正しました' : '追加しました'); resetForm(); renderAtt();
+});
+$('#entryTable').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.del) return guarded(b, async () => { if (!confirm('この稼働を削除しますか？')) return; await mutateWL(d => { d.entries = d.entries.filter(x => x.id !== b.dataset.del); }, '稼働を削除'); renderAtt(); });
+  if (b.dataset.approve) return guarded(b, async () => { await mutateWL(d => { const x = d.entries.find(x => x.id === b.dataset.approve); if (x) x.overApproved = true; }, '上限超過を承認'); toast('超過分を請求対象にしました'); renderAtt(); });
+  if (b.dataset.edit) {
+    const x = curWL().entries.find(x => x.id === b.dataset.edit); if (!x) return;
+    state.editingId = x.id; $('#eDate').value = x.date; $('#eStart').value = x.start; $('#eEnd').value = x.end; $('#eBreak').value = x.breakMin || 0;
+    $('#eCat').value = x.category; $('#eIssue').value = x.issue || ''; $('#eDesc').value = x.desc || ''; $('#eFree').checked = !!x.free;
+    $('#formTitle').textContent = '稼働を編集'; $('#eSave').textContent = '更新'; $('#eCancel').classList.remove('hide'); updateCalc();
+    $('#formTitle').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+};
+$('#xAdd').onclick = e => guarded(e.currentTarget, async () => {
+  const date = $('#xDate').value, desc = $('#xDesc').value.trim(), amount = Number($('#xAmt').value);
+  if (!date || !desc || !amount) return toast('日付・内容・金額を入力してください', true);
+  await mutateWL(d => { d.expenses.push({ id: uid(), date, desc, amount, approved: isOwner(), by: me().id }); }, '実費を追加');
+  $('#xDesc').value = ''; $('#xAmt').value = ''; renderAtt();
+});
+$('#expTable').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.xdel) guarded(b, async () => { await mutateWL(d => { d.expenses = d.expenses.filter(x => x.id !== b.dataset.xdel); }, '実費を削除'); renderAtt(); });
+  if (b.dataset.xok) guarded(b, async () => { await mutateWL(d => { const x = d.expenses.find(x => x.id === b.dataset.xok); if (x) x.approved = true; }, '実費を承諾'); renderAtt(); });
+};
+async function switchMonth(delta) {
+  const [y, m] = state.month.split('-').map(Number); state.month = ym(new Date(y, m - 1 + delta, 1));
+  if (!state.worklogs[`${state.worker}/${state.month}`]) { const r = await api.readJSON(wlPath(state.worker, state.month)); state.worklogs[`${state.worker}/${state.month}`] = { data: r.data || emptyWL(state.worker, state.month), sha: r.sha }; }
+  resetForm(); $('#eDate').value = state.month === ym(new Date()) ? ymd(new Date()) : state.month + '-01'; $('#xDate').value = $('#eDate').value;
+  renderAtt();
+}
+$('#mPrev').onclick = () => guarded(null, () => switchMonth(-1));
+$('#mNext').onclick = () => guarded(null, () => switchMonth(1));
+$('#workerSel').onchange = e => guarded(null, async () => { state.worker = e.target.value; await loadWorklogs(state.worker); renderAtt(); });
+$('#btnApprove').onclick = e => guarded(e.currentTarget, async () => { await mutateWL(d => { d.status = 'approved'; d.approvedAt = new Date().toISOString(); d.history.push({ at: d.approvedAt, by: me().id, act: 'approve' }); }, `${state.month} 稼働報告を承認`); toast('承認しました'); renderAtt(); });
+$('#btnReturn').onclick = e => guarded(e.currentTarget, async () => { const why = prompt('差し戻しの理由（任意）') ?? null; if (why === null) return; await mutateWL(d => { d.status = 'draft'; d.history.push({ at: new Date().toISOString(), by: me().id, act: 'return', note: why }); }, `${state.month} 稼働報告を差し戻し`); toast('差し戻しました'); renderAtt(); });
+
+/* =========================================================
+   請求書PDF
+   ========================================================= */
+function getIssuer() {
+  const w = memberName(state.worker);
+  return { name: w, address: '', email: '', bank: '', regNo: '', withholding: false, ...(LS.get('fy_issuer', {})[state.worker] || {}) };
+}
+function invoiceFileName() { const m = Number(state.month.split('-')[1]); return `${m}月_${getIssuer().name}_請求書.pdf`; }
+function invoiceHTML() {
+  const S = monthSummary(), st = state.settings, iss = getIssuer(), wl = curWL();
+  const [y, m] = state.month.split('-').map(Number);
+  const issueDate = monthEnd(state.month), pay = prevBizDay(nextMonthDay(state.month, st.payDay));
+  const lines = [];
+  lines.push([`業務委託報酬（時間単価）　${y}年${m}月分`, `${fmtHM(S.bill)}`, `${yen(st.rate)}円/時`, S.hourly]);
+  S.fixed.forEach(f => lines.push([f.label, '1式', `${yen(f.amount)}円`, f.amount]));
+  S.exps.forEach(x => lines.push([`実費：${x.desc}`, '1式', `${yen(x.amount)}円`, Number(x.amount)]));
+  const rows = [...wl.entries].sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start));
+  const issues = Object.fromEntries(state.issues.map(i => [i.number, i]));
+  return `
+  <div class="pdfroot">
+    <h1>請求書</h1>
+    <div class="two">
+      <div>
+        <div class="to">${esc(st.client)}　御中</div>
+        <div style="margin-top:14px">件名：業務委託報酬（${y}年${m}月分）</div>
+        <div>下記のとおりご請求申し上げます。</div>
+      </div>
+      <div style="text-align:right">
+        <div>請求番号：INV-${state.month.replace('-', '')}-${esc(state.worker)}</div>
+        <div>請求日：${fmtJPFull(issueDate)}</div>
+        <div style="margin-top:10px;font-weight:700;font-size:14px">${esc(iss.name)}</div>
+        ${iss.address ? `<div class="small">${esc(iss.address)}</div>` : ''}
+        ${iss.email ? `<div class="small">${esc(iss.email)}</div>` : ''}
+        <div class="small">${iss.regNo ? `登録番号：${esc(iss.regNo)}` : '適格請求書発行事業者ではありません'}</div>
+      </div>
+    </div>
+    <div class="big"><span>ご請求金額（税込）</span><b>¥${yen(S.grand)}-</b></div>
+    <table>
+      <thead><tr><th style="width:52%">摘要</th><th>数量</th><th>単価</th><th>金額（円）</th></tr></thead>
+      <tbody>
+        ${lines.map(l => `<tr><td>${esc(l[0])}</td><td class="n">${l[1]}</td><td class="n">${l[2]}</td><td class="n">${yen(l[3])}</td></tr>`).join('')}
+        <tr><td colspan="3" class="n">小計（税抜）</td><td class="n">${yen(S.sub)}</td></tr>
+        <tr><td colspan="3" class="n">消費税（${Math.round(st.taxRate * 100)}%）</td><td class="n">${yen(S.tax)}</td></tr>
+        ${S.wh ? `<tr><td colspan="3" class="n">源泉徴収税</td><td class="n">−${yen(S.wh)}</td></tr>` : ''}
+        <tr><td colspan="3" class="n"><b>合計</b></td><td class="n"><b>${yen(S.grand)}</b></td></tr>
+      </tbody>
+    </table>
+    <div class="small" style="margin-bottom:6px">お支払期日：${fmtJPFull(pay)}</div>
+    <div class="small" style="margin-bottom:4px">お振込先</div>
+    <div class="box">${esc(iss.bank || '（設定画面で振込先を入力してください）')}</div>
+    <div class="small">※ 稼働時間は1分単位で記録し、月合計に時間単価を乗じて1円未満を切り捨てています（業務委託契約書 第6条）。<br>※ 振込手数料はご負担くださいますようお願いいたします（同 第7条4項）。</div>
+
+    <div class="pb"></div>
+    <h1 style="font-size:20px;letter-spacing:.2em">稼働報告書</h1>
+    <div class="two" style="margin-bottom:12px">
+      <div>対象月：${y}年${m}月分<br>受託者名：${esc(iss.name)}</div>
+      <div style="text-align:right">提出先：${esc(st.client)}</div>
+    </div>
+    <table>
+      <thead><tr><th>No.</th><th>日付</th><th>業務区分</th><th style="width:38%">業務の内容</th><th>稼働時間</th><th>関連する個別契約</th></tr></thead>
+      <tbody>
+        ${rows.map((e, i) => { const r = S.res[e.id] || { bill: e.minutes, reason: '' }; return `<tr><td class="n">${i + 1}</td><td>${e.date.slice(5).replace('-', '/')}</td><td>${esc(e.category)}</td><td>${esc(e.desc || '')}${r.reason ? `<br><span class="small">※${esc(r.reason)}（請求対象 ${fmtShort(r.bill)}）</span>` : ''}</td><td class="n">${fmtShort(e.minutes)}</td><td>${e.issue ? `#${e.issue} ${esc(issues[e.issue]?.title || '')}` : ''}</td></tr>`; }).join('') || '<tr><td colspan="6">記録なし</td></tr>'}
+        <tr><td colspan="4" class="n"><b>合計</b></td><td class="n"><b>${fmtHM(S.total)}</b></td><td>請求対象 ${fmtHM(S.bill)}</td></tr>
+      </tbody>
+    </table>
+    <table style="width:60%;margin-left:auto">
+      <tr><td>合計稼働時間 × 時間単価${yen(st.rate)}円</td><td class="n">${yen(S.hourly)}円</td></tr>
+      ${S.fixedSum ? `<tr><td>固定額案件</td><td class="n">${yen(S.fixedSum)}円</td></tr>` : ''}
+      <tr><td>事前承諾を得た実費</td><td class="n">${yen(S.expSum)}円</td></tr>
+      <tr><td>小計（税抜）</td><td class="n">${yen(S.sub)}円</td></tr>
+      <tr><td>消費税等</td><td class="n">${yen(S.tax)}円</td></tr>
+      <tr><td><b>合計</b></td><td class="n"><b>${yen(S.sub + S.tax)}円</b></td></tr>
+    </table>
+  </div>`;
+}
+async function makePdf(mode) {
+  if (!window.html2pdf) throw new Error('PDFライブラリを読み込めませんでした（ネット接続を確認してください）');
+  if (!getIssuer().bank) toast('振込先が未設定です。設定画面の「請求書の発行者情報」から入力できます');
+  await document.fonts.ready;
+  // 1ページ目（請求書）と2ページ目以降（稼働報告書）を別々に描画して結合
+  const [p1, p2] = invoiceHTML().split('<div class="pb"></div>');
+  const pages = [`${p1}</div>`, `<div class="pdfroot">${p2}`];
+  const opt = { margin: [0, 0, 0, 0], filename: invoiceFileName(), image: { type: 'jpeg', quality: 0.96 }, html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0 }, jsPDF: { unit: 'px', format: [794, 1123], hotfixes: ['px_scaling'] }, pagebreak: { mode: ['avoid-all'] } };
+  let w = html2pdf().set(opt).from(pages[0], 'string').toPdf();
+  for (const p of pages.slice(1)) w = w.get('pdf').then(pdf => pdf.addPage()).from(p, 'string').toContainer().toCanvas().toPdf();
+  if (mode === 'save') { await w.save(); return null; }
+  return await w.outputPdf('datauristring');
+}
+$('#btnPdf').onclick = e => guarded(e.currentTarget, async () => { await makePdf('save'); toast(`${invoiceFileName()} を出力しました`); });
+$('#btnPdfSave').onclick = e => guarded(e.currentTarget, async () => {
+  const uri = await makePdf('uri'); const b64 = uri.split(',')[1];
+  const path = `${DATA}invoices/${state.month}/${invoiceFileName()}`;
+  const sha = await api.getSha(path);
+  await api.writeB64(path, b64, sha, `${invoiceFileName()} を保存（${me().name}）`);
+  if (curWL().status === 'draft') await mutateWL(d => { d.status = 'submitted'; d.submittedAt = new Date().toISOString(); d.history.push({ at: d.submittedAt, by: me().id, act: 'submit' }); }, `${state.month} 稼働報告を提出`);
+  toast(api.demo ? '保存しました（デモ：ブラウザ内）' : `GitHubの ${path} に保存しました`); renderAtt();
+});
+
+/* =========================================================
+   動画納品管理 UI
+   ========================================================= */
+async function loadIssues() { state.issues = (await api.listIssues()).map(parseIssue); }
+function cardBadges(i) {
+  const out = [], now = new Date(), m = i.meta;
+  if (m.due && ['ordered', 'editing', 'revising'].includes(i.status)) {
+    const d = daysBetween(new Date(ymd(now)), parseDate(m.due));
+    out.push(`<span class="chip ${d < 0 ? 'bad' : d <= 2 ? 'warn' : ''}">納期 ${fmtJP(m.due)}${d < 0 ? `（${-d}日超過）` : d === 0 ? '（今日）' : `（あと${d}日）`}</span>`);
+  }
+  if (i.status === 'review' && m.deliveries.length) {
+    const lim = new Date(m.deliveries.at(-1).at); lim.setDate(lim.getDate() + state.settings.inspectionDays);
+    const d = daysBetween(now, lim);
+    out.push(`<span class="chip ${d < 0 ? 'bad' : d <= 2 ? 'warn' : 'aqua'}">${d < 0 ? '検収期限切れ（みなし合格）' : `検収期限 ${fmtJP(lim)}（あと${d}日）`}</span>`);
+  }
+  const free = m.revisions.filter(r => !r.paid).length;
+  if (m.revisions.length) out.push(`<span class="chip ${free >= state.settings.freeRevisions ? 'warn' : ''}">無償修正 ${free}/${state.settings.freeRevisions}</span>`);
+  if (m.capHours) { const u = computeUsed()[i.number] || 0; out.push(`<span class="chip ${u > m.capHours * 60 ? 'bad' : ''}">稼働 ${fmtShort(u)}/${m.capHours}h</span>`); }
+  if (m.fixedFee) out.push(`<span class="chip">固定 ${yen(m.fixedFee)}円</span>`);
+  if (m.assignee) out.push(`<span class="chip">${esc(memberName(m.assignee))}</span>`);
+  return out.join('');
+}
+function computeUsed() {
+  const used = {};
+  for (const v of Object.values(state.worklogs)) for (const e of v.data.entries) if (e.issue && !e.free) used[e.issue] = (used[e.issue] || 0) + e.minutes;
+  return used;
+}
+function renderVid() {
+  const hide = $('#hidePub').checked;
+  const cols = STATUSES.filter(s => !(hide && s.key === 'published'));
+  $('#kanban').style.setProperty('--cols', cols.length);
+  $('#kanban').innerHTML = cols.map(s => {
+    const list = state.issues.filter(i => i.status === s.key).sort((a, b) => (a.meta.due || '9').localeCompare(b.meta.due || '9'));
+    return `<div class="col"><h3><span>${s.label}</span><span>${list.length}</span></h3>${list.map(i => `
+      <div class="vcard" data-n="${i.number}">
+        <div class="no">#${i.number}${i.meta.episode ? `　第${i.meta.episode}回` : ''}</div>
+        <div class="ttl">${esc(i.title)}</div>
+        ${i.meta.word ? `<div class="word">🛁 ${esc(i.meta.word)}</div>` : ''}
+        <div class="meta">${cardBadges(i)}</div>
+      </div>`).join('') || '<div class="note" style="padding:6px">—</div>'}</div>`;
+  }).join('');
+  const u = api.repoUrl();
+  $('#repoLink').innerHTML = u ? `GitHub：<a href="${u}/issues?q=label%3A${encodeURIComponent(BASE_LABEL)}" target="_blank" rel="noopener">${esc(state.cfg.owner)}/${esc(state.cfg.repo)}</a>` : '';
+  $('#btnNewVideo').classList.toggle('hide', !isOwner());
+}
+$('#kanban').onclick = e => { const c = e.target.closest('.vcard'); if (c) openDetail(Number(c.dataset.n)); };
+$('#hidePub').onchange = renderVid;
+$('#btnReload').onclick = e => guarded(e.currentTarget, async () => { await loadIssues(); renderVid(); toast('最新の状態にしました'); });
+
+function openModal(html) { $('#sheet').innerHTML = html; $('#modal').classList.add('open'); }
+function closeModal() { $('#modal').classList.remove('open'); }
+$('#modal').addEventListener('mousedown', e => { if (e.target.id === 'modal') closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+function videoForm(i) {
+  const m = i?.meta || { assignee: editors()[0]?.id, length: '10〜20分' };
+  return `
+  <div class="head"><div><h2>${i ? '発注内容を編集' : '新規発注（個別契約）'}</h2><div class="note">第4条：内容・納期・想定稼働時間を通知し、受託者の承諾で個別契約が成立します</div></div><span class="sp"></span><button class="btn sm" data-close>閉じる</button></div>
+  <div class="fgrid">
+    <div class="f full"><label>タイトル</label><input id="vTitle" value="${esc(i?.title || '')}" placeholder="例：シャンプーの泡カウンター"></div>
+    <div class="f"><label>お風呂で思いついた単語</label><input id="vWord" value="${esc(m.word || '')}"></div>
+    <div class="f"><label>回（エピソード番号）</label><input type="number" id="vEp" value="${esc(m.episode || '')}"></div>
+    <div class="f full"><label>仕様・編集指示</label><textarea id="vSpec">${esc(m.spec || '')}</textarea></div>
+    <div class="f"><label>尺の目安</label><input id="vLen" value="${esc(m.length || '')}"></div>
+    <div class="f"><label>納期</label><input type="date" id="vDue" value="${esc(m.due || '')}"></div>
+    <div class="f full"><label>撮影素材のURL（Googleドライブ等）</label><input id="vRaw" value="${esc(m.rawUrl || '')}"></div>
+    <div class="f"><label>上限稼働時間（時間・空欄でなし）</label><input type="number" step="0.5" id="vCap" value="${esc(m.capHours || '')}"></div>
+    <div class="f"><label>固定額（円・税別／空欄で時間単価）</label><input type="number" id="vFee" value="${esc(m.fixedFee || '')}"></div>
+    <div class="f"><label>担当</label><select id="vAsg">${editors().map(e => `<option value="${e.id}" ${e.id === m.assignee ? 'selected' : ''}>${esc(e.name)}</option>`).join('')}</select></div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px"><button class="btn" data-close>キャンセル</button><button class="btn pri" id="vSave">${i ? '保存' : '発注する'}</button></div>`;
+}
+$('#btnNewVideo').onclick = () => { openModal(videoForm(null)); bindVideoForm(null); };
+function bindVideoForm(i) {
+  $$('[data-close]', $('#sheet')).forEach(b => b.onclick = closeModal);
+  $('#vSave').onclick = e => guarded(e.currentTarget, async () => {
+    const title = $('#vTitle').value.trim(); if (!title) return toast('タイトルを入力してください', true);
+    const patch = { word: $('#vWord').value.trim(), episode: Number($('#vEp').value) || null, spec: $('#vSpec').value, length: $('#vLen').value, due: $('#vDue').value, rawUrl: $('#vRaw').value.trim(), capHours: Number($('#vCap').value) || 0, fixedFee: Number($('#vFee').value) || 0, assignee: $('#vAsg').value };
+    if (!i) {
+      const meta = { ...patch, deliveries: [], revisions: [], publishedUrl: '', orderedAt: new Date().toISOString(), orderedBy: me().id };
+      const gh = await api.createIssue({ title, body: buildBody(meta), labels: [BASE_LABEL, statusLabel('ordered')] });
+      await api.addComment(gh.number, `📝 **発注**（${me().name}）\n納期：${meta.due || '未定'}　上限稼働：${meta.capHours ? meta.capHours + '時間' : 'なし'}${meta.fixedFee ? `　固定額：${yen(meta.fixedFee)}円` : ''}\n担当の方は内容を確認し「承諾して着手」を押してください（2営業日以内）。`);
+      toast('発注しました');
+    } else {
+      await mutateIssue(i.number, (meta) => Object.assign(meta, patch), { title });
+      await api.addComment(i.number, `✏️ **発注内容を変更**（${me().name}）`);
+      toast('保存しました');
+    }
+    await loadIssues(); renderVid(); closeModal();
+  });
+}
+async function mutateIssue(n, fn, extra = {}) {
+  const cur = parseIssue(await api.getIssue(n));
+  const meta = cur.meta; fn(meta, cur);
+  const st = extra.status || cur.status;
+  const labels = cur.labels.filter(l => !l.startsWith('編集:')).concat(statusLabel(st));
+  if (!labels.includes(BASE_LABEL)) labels.push(BASE_LABEL);
+  await api.updateIssue(n, { body: buildBody(meta), labels, ...(extra.title ? { title: extra.title } : {}), ...(extra.state ? { state: extra.state } : {}) });
+}
+
+async function openDetail(n) {
+  const i = state.issues.find(x => x.number === n); if (!i) return;
+  openModal(`<div class="note">読み込み中…</div>`);
+  let comments = [];
+  try { comments = await api.listComments(n); } catch (e) { toast(e.message, true); }
+  const m = i.meta, role = me().role, mine = m.assignee === me().id || role === 'owner';
+  const free = m.revisions.filter(r => !r.paid).length;
+  const acts = [];
+  if (i.status === 'ordered' && (role === 'editor' && mine)) acts.push(`<button class="btn pri" data-act="accept">承諾して着手</button>`);
+  if (['editing', 'revising'].includes(i.status) && role === 'editor' && mine) acts.push(`<button class="btn pri" data-act="deliver">${i.status === 'revising' ? '修正版を納品' : '納品する'}</button>`);
+  if (i.status === 'review' && ['owner', 'partner'].includes(role)) acts.push(`<button class="btn" data-act="revise">修正を依頼</button>`);
+  if (i.status === 'review' && role === 'owner') acts.push(`<button class="btn pri" data-act="pass">検収合格</button>`);
+  if (i.status === 'accepted' && role === 'owner') acts.push(`<button class="btn dark" data-act="publish">公開済にする</button>`);
+  if (role === 'owner' && i.status !== 'published') acts.push(`<button class="btn" data-act="edit">発注内容を編集</button>`);
+  const ghu = api.issueUrl(n);
+  const used = computeUsed()[n] || 0;
+  openModal(`
+    <div class="head"><div><div class="note">#${n}${m.episode ? `　第${m.episode}回` : ''}　<span class="chip aqua">${ST[i.status].label}</span></div><h2>${esc(i.title)}</h2>${m.word ? `<div style="color:var(--aqua-ink)">🛁 ${esc(m.word)}</div>` : ''}</div><span class="sp"></span><button class="btn sm" data-close>閉じる</button></div>
+    <div class="meta" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px">${cardBadges(i)}</div>
+    ${acts.length ? `<div class="actions">${acts.join('')}</div>` : ''}
+    <dl class="kv">
+      <dt>仕様・指示</dt><dd style="white-space:pre-wrap">${linkify(m.spec || '—')}</dd>
+      <dt>尺の目安</dt><dd>${esc(m.length || '—')}</dd>
+      <dt>納期</dt><dd>${esc(m.due || '—')}</dd>
+      <dt>担当</dt><dd>${esc(memberName(m.assignee))}</dd>
+      <dt>報酬</dt><dd>${m.fixedFee ? `固定額 ${yen(m.fixedFee)}円（税別）` : `時間単価${m.capHours ? `（上限 ${m.capHours}時間／現在 ${fmtShort(used)}）` : ''}`}</dd>
+      <dt>撮影素材</dt><dd>${m.rawUrl ? linkify(m.rawUrl) : '—'}</dd>
+      <dt>納品物</dt><dd>${m.deliveries.length ? m.deliveries.map((d, k) => `v${k + 1}（${fmtJP(d.at)}）${linkify(d.url)}`).join('<br>') : '—'}</dd>
+      <dt>修正依頼</dt><dd>${m.revisions.length ? `${m.revisions.length}回（無償 ${free}/${state.settings.freeRevisions}${m.revisions.some(r => r.paid) ? '・有償あり' : ''}）` : 'なし'}</dd>
+      ${m.publishedUrl ? `<dt>公開URL</dt><dd>${linkify(m.publishedUrl)}</dd>` : ''}
+      ${ghu ? `<dt>GitHub</dt><dd><a href="${ghu}" target="_blank" rel="noopener">Issue #${n} を開く</a></dd>` : ''}
+    </dl>
+    <div class="sec-title">やりとり</div>
+    <div class="timeline">${comments.length ? comments.map(c => `<div class="tl"><div class="by">${esc(c.user?.login || '')}・${new Date(c.created_at).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</div><div class="body">${linkify(c.body)}</div></div>`).join('') : '<div class="note">まだやりとりはありません</div>'}</div>
+    <div class="f"><label>コメント</label><textarea id="cBody" placeholder="${esc(me().name)}としてコメント"></textarea></div>
+    <div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="btn dark" id="cSend">送信</button></div>
+  `);
+  $$('[data-close]', $('#sheet')).forEach(b => b.onclick = closeModal);
+  $('#cSend').onclick = e => guarded(e.currentTarget, async () => { const t = $('#cBody').value.trim(); if (!t) return; await api.addComment(n, `💬 **${me().name}**\n${t}`); openDetail(n); });
+  $$('[data-act]', $('#sheet')).forEach(b => b.onclick = () => doAction(i, b.dataset.act, b));
+}
+function subForm(title, inner, onOk, okLabel = '確定') {
+  const prev = $('#sheet').innerHTML;
+  openModal(`<div class="head"><h2>${title}</h2><span class="sp"></span><button class="btn sm" id="sfBack">戻る</button></div>${inner}<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px"><button class="btn pri" id="sfOk">${okLabel}</button></div>`);
+  $('#sfBack').onclick = () => openDetail(onOk.n);
+  $('#sfOk').onclick = e => guarded(e.currentTarget, onOk);
+}
+async function finish(n, msg) { await loadIssues(); renderVid(); if (state.tab === 'att') renderAtt(); toast(msg); openDetail(n); }
+function doAction(i, act, btn) {
+  const n = i.number, who = me().name, S = state.settings;
+  if (act === 'edit') { openModal(videoForm(i)); bindVideoForm(i); return; }
+  if (act === 'accept') return guarded(btn, async () => {
+    await mutateIssue(n, m => { m.acceptedOrderAt = new Date().toISOString(); }, { status: 'editing' });
+    await api.addComment(n, `🤝 **承諾・着手**（${who}）\n個別契約が成立しました。`);
+    await finish(n, '着手しました');
+  });
+  if (act === 'deliver') {
+    const f = async () => {
+      const url = $('#dUrl').value.trim(); if (!url) return toast('納品物のURLを入力してください', true);
+      const note = $('#dNote').value.trim(), ai = $('#dAI').value.trim(), mat = $('#dMat').value.trim();
+      let v;
+      await mutateIssue(n, m => { m.deliveries.push({ at: new Date().toISOString(), by: me().id, url, note, ai, materials: mat }); v = m.deliveries.length; }, { status: 'review' });
+      const lim = new Date(); lim.setDate(lim.getDate() + S.inspectionDays);
+      await api.addComment(n, `📦 **納品 v${v}**（${who}）\n${url}${note ? '\n' + note : ''}${mat ? `\n使用素材（第8条5項）：${mat}` : ''}${ai ? `\n生成AIの利用（第9条2項）：${ai}` : ''}\n検収期限：${fmtJPFull(lim)}`);
+      await finish(n, '納品しました');
+    }; f.n = n;
+    subForm('納品する', `
+      <div class="fgrid">
+        <div class="f full"><label>完成動画（MP4）・プロジェクトファイルのURL</label><input id="dUrl" placeholder="https://drive.google.com/…"></div>
+        <div class="f full"><label>メモ</label><textarea id="dNote" placeholder="修正点や確認してほしい箇所"></textarea></div>
+        <div class="f full"><label>使用したBGM・フォント・素材（名称／提供元／ライセンス）</label><input id="dMat"></div>
+        <div class="f full"><label>生成AIを使った場合：サービス名と使った範囲（事前承諾が必要）</label><input id="dAI" placeholder="使っていなければ空欄"></div>
+      </div>`, f, '納品する');
+    return;
+  }
+  if (act === 'revise') {
+    const free = i.meta.revisions.filter(r => !r.paid).length;
+    const f = async () => {
+      const note = $('#rNote').value.trim(); if (!note) return toast('修正内容を入力してください', true);
+      const paid = $$('input[name=rType]').find(r => r.checked).value === 'paid';
+      await mutateIssue(n, m => { m.revisions.push({ at: new Date().toISOString(), by: me().id, note, paid }); }, { status: 'revising' });
+      await api.addComment(n, `🔁 **修正依頼**（${who}・${paid ? '有償：稼働時間に算入' : '無償修正'}）\n${note}`);
+      await finish(n, '修正を依頼しました');
+    }; f.n = n;
+    subForm('修正を依頼', `
+      <div class="f"><label>修正内容</label><textarea id="rNote" style="min-height:110px" placeholder="例：02:15 のテロップ誤字「アプル」→「アプリ」"></textarea></div>
+      <div class="sec-title">修正の種類（第5条）</div>
+      <div class="radio">
+        <label><input type="radio" name="rType" value="free" ${free < S.freeRevisions ? 'checked' : ''} ${free >= S.freeRevisions ? 'disabled' : ''}> 無償修正（仕様に合っていない箇所）残り${Math.max(0, S.freeRevisions - free)}回</label>
+        <label><input type="radio" name="rType" value="paid" ${free >= S.freeRevisions ? 'checked' : ''}> 有償（指示の変更・追加、または回数超過）</label>
+      </div>
+      <div class="note" style="margin-top:6px">有償の修正にかかった時間は稼働時間に算入され、上限の事前承諾があったものとみなされます。</div>`, f, '依頼する');
+    return;
+  }
+  if (act === 'pass') return guarded(btn, async () => {
+    if (!confirm('検収合格にしますか？（固定額案件は今月の請求に計上されます）')) return;
+    await mutateIssue(n, m => { m.acceptedAt = new Date().toISOString(); }, { status: 'accepted' });
+    await api.addComment(n, `✅ **検収合格**（${who}）`);
+    await finish(n, '検収合格にしました');
+  });
+  if (act === 'publish') {
+    const f = async () => {
+      const url = $('#pUrl').value.trim();
+      await mutateIssue(n, m => { m.publishedUrl = url; m.publishedAt = new Date().toISOString(); }, { status: 'published', state: 'closed' });
+      await api.addComment(n, `🎉 **公開**（${who}）${url ? '\n' + url : ''}`);
+      await finish(n, '公開済にしました');
+    }; f.n = n;
+    subForm('公開済にする', `<div class="f"><label>YouTubeのURL（任意）</label><input id="pUrl" placeholder="https://youtu.be/…"></div>`, f, '公開済にする');
+  }
+}
+
+/* =========================================================
+   設定
+   ========================================================= */
+$('#btnSettings').onclick = openSettings; $('#btnGoSettings').onclick = openSettings;
+function openSettings() {
+  const c = state.cfg, S = state.settings, iss = getIssuer();
+  openModal(`
+    <div class="head"><h2>設定</h2><span class="sp"></span><button class="btn sm" data-close>閉じる</button></div>
+    <div class="sec-title">あなたは誰ですか</div>
+    <div class="f"><select id="sMe">${S.members.map(m => `<option value="${m.id}" ${m.id === c.me ? 'selected' : ''}>${esc(m.name)}（${ROLE_LABEL[m.role]}）</option>`).join('')}</select></div>
+
+    <div class="sec-title">GitHub連携</div>
+    <div class="fgrid">
+      <div class="f"><label>オーナー（ユーザー名 / 組織）</label><input id="sOwner" value="${esc(c.owner)}"></div>
+      <div class="f"><label>リポジトリ名</label><input id="sRepo" value="${esc(c.repo)}"></div>
+      <div class="f"><label>ブランチ</label><input id="sBranch" value="${esc(c.branch || 'main')}"></div>
+      <div class="f"><label>Personal Access Token（このブラウザにだけ保存）</label><input id="sToken" type="password" value="${esc(c.token)}" placeholder="github_pat_…"></div>
+    </div>
+    <div class="row" style="margin-top:8px"><button class="btn" id="sTest">接続テスト</button><button class="btn" id="sLabels">ラベルを確認</button><span class="note" id="sRes"></span></div>
+
+    <div class="sec-title">請求書の発行者情報（${esc(memberName(state.worker))}・このブラウザにだけ保存）</div>
+    <div class="fgrid">
+      <div class="f"><label>氏名（ファイル名にも使われます）</label><input id="iName" value="${esc(iss.name)}"></div>
+      <div class="f"><label>メール</label><input id="iMail" value="${esc(iss.email)}"></div>
+      <div class="f full"><label>住所</label><input id="iAddr" value="${esc(iss.address)}"></div>
+      <div class="f full"><label>振込先（銀行名・支店・種別・口座番号・名義）</label><textarea id="iBank">${esc(iss.bank)}</textarea></div>
+      <div class="f"><label>適格請求書の登録番号（なければ空欄）</label><input id="iReg" value="${esc(iss.regNo)}" placeholder="T1234567890123"></div>
+      <div class="f" style="justify-content:flex-end"><label style="display:flex;gap:6px;align-items:center;font-size:13px;color:var(--ink)"><input type="checkbox" id="iWh" ${iss.withholding ? 'checked' : ''}> 源泉徴収を行う</label></div>
+    </div>
+
+    <div class="${isOwner() ? '' : 'hide'}">
+      <div class="sec-title">契約条件（全員で共有・発注者のみ変更）</div>
+      <div class="fgrid">
+        <div class="f"><label>プロジェクト名</label><input id="kProj" value="${esc(S.project)}"></div>
+        <div class="f"><label>請求先（甲）</label><input id="kClient" value="${esc(S.client)}"></div>
+        <div class="f"><label>時間単価（円・税別）</label><input type="number" id="kRate" value="${S.rate}"></div>
+        <div class="f"><label>無償修正の回数</label><input type="number" id="kFree" value="${S.freeRevisions}"></div>
+        <div class="f full"><label>メンバー（id:名前:役割 を1行ずつ／役割は owner・editor・partner）</label><textarea id="kMembers">${S.members.map(m => `${m.id}:${m.name}:${m.role}`).join('\n')}</textarea></div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;gap:8px;margin-top:18px;flex-wrap:wrap">
+      <button class="btn danger" id="sResetDemo">${api.demo ? 'デモデータを初期化' : 'GitHub連携を解除'}</button>
+      <button class="btn pri" id="sSave">保存して再読み込み</button>
+    </div>`);
+  $$('[data-close]', $('#sheet')).forEach(b => b.onclick = closeModal);
+  const readCfg = () => ({ owner: $('#sOwner').value.trim(), repo: $('#sRepo').value.trim(), branch: $('#sBranch').value.trim() || 'main', token: $('#sToken').value.trim(), me: $('#sMe').value });
+  $('#sTest').onclick = e => guarded(e.currentTarget, async () => {
+    const b = new GitHubBackend(readCfg()); const u = await b.whoami(); const r = await b.repoInfo();
+    $('#sRes').textContent = `OK：${u.login} として ${r.full_name}（${r.private ? '非公開' : '公開'}）に接続できました`;
+    if (!r.private) toast('リポジトリが公開になっています。稼働・請求データが誰でも見られるため、非公開を推奨します', true);
+  });
+  $('#sLabels').onclick = e => guarded(e.currentTarget, async () => { await new GitHubBackend(readCfg()).ensureLabels(); $('#sRes').textContent = 'ラベルを準備しました'; });
+  $('#sResetDemo').onclick = () => {
+    if (api.demo) { if (confirm('デモデータを消して初期状態に戻しますか？')) { LS.del('fy_demo'); location.reload(); } }
+    else if (confirm('このブラウザのGitHub連携を解除しますか？（GitHub上のデータは消えません）')) { LS.set('fy_cfg', { ...state.cfg, token: '' }); location.reload(); }
+  };
+  $('#sSave').onclick = e => guarded(e.currentTarget, async () => {
+    const cfg = readCfg(); LS.set('fy_cfg', cfg);
+    const all = LS.get('fy_issuer', {});
+    all[state.worker] = { name: $('#iName').value.trim() || memberName(state.worker), email: $('#iMail').value.trim(), address: $('#iAddr').value.trim(), bank: $('#iBank').value, regNo: $('#iReg').value.trim(), withholding: $('#iWh').checked };
+    LS.set('fy_issuer', all);
+    if (isOwner()) {
+      const members = $('#kMembers').value.split('\n').map(l => l.trim()).filter(Boolean).map(l => { const [id, name, role] = l.split(':').map(s => s.trim()); const old = state.settings.members.find(m => m.id === id) || {}; return { ...old, id, name: name || id, role: ['owner', 'editor', 'partner'].includes(role) ? role : 'partner' }; });
+      const ns = { ...state.settings, project: $('#kProj').value.trim(), client: $('#kClient').value.trim(), rate: Number($('#kRate').value) || state.settings.rate, freeRevisions: Number($('#kFree').value) || 0, members };
+      if (JSON.stringify(ns) !== JSON.stringify(state.settings)) {
+        const nb = cfg.token && cfg.owner && cfg.repo ? new GitHubBackend(cfg) : api;
+        const sha = await nb.getSha(DATA + 'settings.json');
+        await nb.writeB64(DATA + 'settings.json', b64enc(JSON.stringify(ns, null, 2)), sha, `契約条件・メンバー設定を更新（${me().name}）`);
+      }
+    }
+    location.reload();
+  });
+}
+
+/* =========================================================
+   起動
+   ========================================================= */
+function setTab(t) {
+  state.tab = t; LS.set('fy_tab', t);
+  $$('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  $('#tab-att').classList.toggle('hide', t !== 'att'); $('#tab-vid').classList.toggle('hide', t !== 'vid');
+  t === 'att' ? renderAtt() : renderVid();
+}
+$$('.tabs button').forEach(b => b.onclick = () => setTab(b.dataset.tab));
+
+async function boot() {
+  const c = state.cfg;
+  api = (c.token && c.owner && c.repo) ? new GitHubBackend(c) : new DemoBackend();
+  $('#demoBanner').classList.toggle('hide', !api.demo);
+  document.body.classList.add('loading');
+  try {
+    const s = await api.readJSON(DATA + 'settings.json');
+    if (s.data) state.settings = { ...DEFAULT_SETTINGS, ...s.data };
+    $('#projName').textContent = state.settings.project;
+    $('#meChip').textContent = `${me().name}（${ROLE_LABEL[me().role]}）`;
+    state.worker = me().role === 'editor' ? me().id : (editors()[0]?.id || me().id);
+    await Promise.all([loadIssues(), loadWorklogs(state.worker)]);
+  } catch (e) {
+    console.error(e);
+    toast(`読み込みに失敗しました：${e.message}`, true);
+    $('#projName').textContent = state.settings.project; $('#meChip').textContent = me().name;
+    state.worker ||= editors()[0]?.id;
+  } finally { document.body.classList.remove('loading'); }
+  setTab(state.tab);
+  if (!LS.get('fy_cfg_seen', false) && api.demo) { LS.set('fy_cfg_seen', true); }
+}
+boot();
+</script>
+</body>
+</html>

@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>お風呂ワード制作室</title>
+<title>Fuyantech制作室</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="お風呂ワード">
+<meta name="apple-mobile-web-app-title" content="Fuyantech制作室">
 <meta name="theme-color" content="#f4f1ea">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -104,7 +104,6 @@ table.t tr.ex td{color:var(--ink-3)}
 .vcard:hover{border-color:var(--aqua)}
 .vcard .no{font-size:11px;color:var(--ink-3)}
 .vcard .ttl{font-weight:700;margin:2px 0 4px;line-height:1.4}
-.vcard .word{font-size:12px;color:var(--aqua-ink);margin-bottom:6px}
 .vcard .meta{display:flex;flex-wrap:wrap;gap:4px}
 /* modal */
 .modal{position:fixed;inset:0;background:rgba(29,42,58,.38);display:none;align-items:flex-start;justify-content:center;z-index:50;padding:40px 12px;overflow-y:auto}
@@ -182,10 +181,10 @@ table.t tr.ex td{color:var(--ink-3)}
   <div class="top-in">
     <div class="brand">
       <div class="mark" aria-hidden="true">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 12h18v3a5 5 0 0 1-5 5H8a5 5 0 0 1-5-5v-3z"/><path d="M6 12V6a2 2 0 0 1 4 0"/><path d="M8 20l-1 2M16 20l1 2"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="12" rx="2"/><path d="M3 9l2-5 16 0-2 5"/><path d="M8 4l2 5M14 4l2 5"/></svg>
       </div>
       <div style="min-width:0">
-        <h1>お風呂ワード制作室</h1>
+        <h1>Fuyantech制作室</h1>
         <small id="projName"></small>
       </div>
     </div>
@@ -357,7 +356,7 @@ function nextMonthDay(month, day) { const [y,m] = month.split('-').map(Number); 
    共有設定（リポジトリ seisaku/settings.json）
    ========================================================= */
 const DEFAULT_SETTINGS = {
-  project: 'Fuyantrech｜お風呂で思いついた単語でアプリを作る会',
+  project: '動画編集の発注・納品と稼働管理',
   rate: 1182,              // 第6条1項 時間単価（税別）
   taxRate: 0.10,
   freeRevisions: 2,        // 第5条3項 無償修正回数
@@ -461,13 +460,13 @@ class DemoBackend {
   save() { LS.set('fy_demo', this.s); }
   seed() {
     const now = new Date(); const d = n => { const x = new Date(now); x.setDate(x.getDate() + n); return x; };
-    const meta1 = { episode: 1, word: 'あわあわ', spec: 'アプリ「あわあわタイマー」開発の様子を15分程度に。冒頭30秒でワードの紹介。', length: '10〜20分', rawUrl: 'https://drive.google.com/…', due: ymd(d(5)), capHours: 8, fixedFee: 0, assignee: 'tomidokoro', deliveries: [], revisions: [], publishedUrl: '' };
-    const meta2 = { ...meta1, episode: 2, word: 'ゆけむり', spec: '湯けむりエフェクトのカメラアプリ回。', due: ymd(d(12)), capHours: 6, deliveries: [] };
+    const meta1 = { series: 'デモ', spec: '（デモ）カット編集・テロップ・BGM。冒頭30秒で完成物を見せる。', length: '10〜20分', rawUrl: 'https://drive.google.com/…', due: ymd(d(5)), capHours: 8, fixedFee: 0, assignee: 'tomidokoro', deliveries: [], revisions: [], publishedUrl: '' };
+    const meta2 = { ...meta1, spec: '（デモ）画面録画を中心にした解説回。', due: ymd(d(12)), capHours: 6, deliveries: [] };
     const s = { files: {}, issues: [], comments: {}, n: 0 };
     this.s = s;
     const mk = (title, meta, st) => { const n = ++s.n; s.issues.push({ number: n, title, state: 'open', html_url: '#', labels: [{ name: BASE_LABEL }, { name: statusLabel(st) }], body: buildBody(meta), created_at: now.toISOString(), user: { login: 'kota' } }); s.comments[n] = []; return n; };
-    mk('あわあわタイマー', meta1, 'editing');
-    mk('ゆけむりカメラ', meta2, 'ordered');
+    mk('（デモ）サンプル動画A', meta1, 'editing');
+    mk('（デモ）サンプル動画B', meta2, 'ordered');
     return s;
   }
   async readJSON(path) { const f = this.s.files[path]; return f ? { data: JSON.parse(b64dec(f.content)), sha: f.sha } : { data: null, sha: null }; }
@@ -480,7 +479,7 @@ class DemoBackend {
     this.s.files[path] = { content, sha: uid() }; this.save(); return {};
   }
   async listDir(path) {
-    if (path === 'daihon/pdf') return [{ name: '070-insta-ai-douga.pdf', type: 'file' }];
+    if (path === 'daihon/pdf') return [{ name: '070-sample.pdf', type: 'file' }];
     const pre = path.replace(/\/$/, '') + '/'; const out = new Map();
     for (const k of Object.keys(this.s.files)) if (k.startsWith(pre)) { const rest = k.slice(pre.length); const name = rest.split('/')[0]; out.set(name, rest.includes('/') ? 'dir' : 'file'); }
     return [...out].map(([name, type]) => ({ name, type }));
@@ -541,11 +540,11 @@ document.addEventListener('click', e => {
 const DEMO_PLANS = {
   'docs/index.md': `| # | タイトル | L | F | T | シリーズ | 公開 | 尺 | 状態 | ファイル |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 001 | お風呂で思いついた一言だけで、AIとアプリを作ってみた | L2 | F2 | T3 | 100個企画 #1 | 2026-08-28 | 18分 | 承認済 | \`001-ofuro-hitokoto.md\` |
-| 019 | AIでアプリが作れる時代、エンジニアの仕事はどう変わるのか | L3 | F3 | T4 | 対談 | — | 20分 | レビュー待ち | \`019-engineer-no-shigoto.md\` |
-| 070 | インスタに出てくるAI動画、0から作ってみた | L2 | F2 | T3 | 単発 | — | 18分 | 撮影 | \`070-insta-ai-douga.md\` |`,
-  'videos/001-ofuro-hitokoto.md': `---\nid: "001"\ntitle: "お風呂で思いついた一言だけで、AIとアプリを作ってみた"\nseries: 100個企画 #1\nlength_min: 18\nlayout_main: B\nlayout_sub: A\ncameras: [ひき, 手元]\nscreen_rec: true\ntelop_count: 12\nbgm: L2\nedit_target_min: 150\nstatus: 承認済\n---\n\n# お風呂で思いついた一言だけで、AIとアプリを作ってみた\n\n## 構成\n\n| 時間 | 内容 |\n| --- | --- |\n| 0:00 | 完成したアプリを見せる |\n| 0:30 | 今日のお題を宣言 |\n\n## 画面設計\n\n主レイアウトBで画面録画を大きく。\n\n## 必要素材\n\n- 画面録画\n`,
-  'videos/070-insta-ai-douga.md': `---\nid: "070"\ntitle: "インスタに出てくるAI動画、0から作ってみた"\nseries: 単発\nlength_min: 18\nlayout_main: B\nlayout_sub: A\ncameras: [ひき, より, 斜め]\nscreen_rec: true\ntelop_count: 12\nbgm: L2\nedit_target_min: 120\nstatus: 撮影\n---\n\n## 構成\n\n冒頭30秒で完成した広告動画を見せる。\n`
+| 001 | （デモ）サンプル企画1 | L2 | F2 | T3 | 100個企画 #1 | 2026-08-28 | 18分 | 承認済 | \`001-sample.md\` |
+| 019 | （デモ）サンプル企画3 | L3 | F3 | T4 | 対談 | — | 20分 | レビュー待ち | \`019-sample.md\` |
+| 070 | （デモ）サンプル企画2 | L2 | F2 | T3 | 単発 | — | 18分 | 撮影 | \`070-sample.md\` |`,
+  'videos/001-sample.md': `---\nid: "001"\ntitle: "（デモ）サンプル企画1"\nseries: 100個企画 #1\nlength_min: 18\nlayout_main: B\nlayout_sub: A\ncameras: [ひき, 手元]\nscreen_rec: true\ntelop_count: 12\nbgm: L2\nedit_target_min: 150\nstatus: 承認済\n---\n\n# （デモ）サンプル企画1\n\n## 構成\n\n| 時間 | 内容 |\n| --- | --- |\n| 0:00 | 完成したアプリを見せる |\n| 0:30 | 今日のお題を宣言 |\n\n## 画面設計\n\n主レイアウトBで画面録画を大きく。\n\n## 必要素材\n\n- 画面録画\n`,
+  'videos/070-sample.md': `---\nid: "070"\ntitle: "（デモ）サンプル企画2"\nseries: 単発\nlength_min: 18\nlayout_main: B\nlayout_sub: A\ncameras: [ひき, より, 斜め]\nscreen_rec: true\ntelop_count: 12\nbgm: L2\nedit_target_min: 120\nstatus: 撮影\n---\n\n## 構成\n\n冒頭30秒で完成した広告動画を見せる。\n`
 };
 const PLAN_READY = ['承認済', '撮影', '編集']; // 発注の候補として最初に出す状態
 const LAYOUT_LABEL = { A: 'A', B: 'B', C: 'C' };
@@ -605,7 +604,6 @@ function buildBody(meta) {
     ['企画', meta.planId ? `${meta.planId} ${meta.planTitle || ''}${meta.planUrl ? `（${meta.planUrl}）` : ''}` : '—'],
     ['台本', meta.scriptUrl || '—'],
     ['シリーズ', meta.series || '—'],
-    ['お風呂ワード', meta.word || '—'],
     ['納期', meta.due || '—'],
     ['尺の目安', meta.length || '—'],
     ['上限稼働時間', meta.capHours ? `${meta.capHours}時間` : 'なし'],
@@ -615,7 +613,7 @@ function buildBody(meta) {
     ['最新の納品物', meta.deliveries?.length ? meta.deliveries.at(-1).url : '—'],
     ['公開URL', meta.publishedUrl || '—']
   ];
-  return `<!-- fy-meta\n${json}\n-->\n\n### 🛁 お風呂ワード：${meta.word || ''}\n\n#### 仕様・指示\n${meta.spec || '（なし）'}\n\n| 項目 | 内容 |\n|---|---|\n${rows.map(r => `| ${r[0]} | ${String(r[1]).replace(/\|/g, '｜')} |`).join('\n')}\n\n---\n<sub>このIssueは「お風呂ワード制作室」から更新されます。先頭のメタデータは手で編集しないでください。</sub>`;
+  return `<!-- fy-meta\n${json}\n-->\n\n### 編集の発注${meta.planId ? `：企画${meta.planId}` : ''}\n\n#### 仕様・指示\n${meta.spec || '（なし）'}\n\n| 項目 | 内容 |\n|---|---|\n${rows.map(r => `| ${r[0]} | ${String(r[1]).replace(/\|/g, '｜')} |`).join('\n')}\n\n---\n<sub>このIssueは「Fuyantech制作室」から更新されます。先頭のメタデータは手で編集しないでください。</sub>`;
 }
 function parseIssue(gh) {
   const m = /<!-- fy-meta\s*([\s\S]*?)\s*-->/.exec(gh.body || '');
@@ -1023,7 +1021,6 @@ function renderVid() {
       <div class="vcard" data-n="${i.number}">
         <div class="no">#${i.number}${i.meta.planId ? `　企画${esc(i.meta.planId)}` : ''}${i.meta.series ? `　${esc(i.meta.series)}` : ''}</div>
         <div class="ttl">${esc(i.title)}</div>
-        ${i.meta.word ? `<div class="word">🛁 ${esc(i.meta.word)}</div>` : ''}
         <div class="meta">${cardBadges(i)}</div>
       </div>`).join('') || '<div class="note" style="padding:6px">—</div>'}</div>`;
   }).join('');
@@ -1053,8 +1050,7 @@ function videoForm(i) {
   <div class="fgrid">
     ${planBlock}
     <div class="f full"><label>タイトル</label><input id="vTitle" value="${esc(i?.title || '')}" placeholder="企画を選ぶと自動で入ります"></div>
-    <div class="f"><label>お風呂で思いついた単語（任意）</label><input id="vWord" value="${esc(m.word || '')}"></div>
-    <div class="f"><label>シリーズ</label><input id="vSeries" value="${esc(m.series || '')}"></div>
+    <div class="f full"><label>シリーズ</label><input id="vSeries" value="${esc(m.series || '')}"></div>
     <div class="f full"><label>仕様・編集指示</label><textarea id="vSpec" style="min-height:160px">${esc(m.spec || '')}</textarea></div>
     <div class="f"><label>尺の目安</label><input id="vLen" value="${esc(m.length || '')}"></div>
     <div class="f"><label>納期</label><input type="date" id="vDue" value="${esc(m.due || '')}"></div>
@@ -1108,7 +1104,7 @@ function bindVideoForm(i) {
   $('#vSave').onclick = e => guarded(e.currentTarget, async () => {
     const title = $('#vTitle').value.trim(); if (!title) return toast('企画を選ぶか、タイトルを入力してください', true);
     if (!i && !$('#vPlan').value) return toast('企画を選んでください（企画がない場合は「企画を選ばずに入力する」）', true);
-    const patch = { word: $('#vWord').value.trim(), series: $('#vSeries').value.trim(), spec: $('#vSpec').value, length: $('#vLen').value, due: $('#vDue').value, rawUrl: $('#vRaw').value.trim(), capHours: Number($('#vCap').value) || 0, fixedFee: Number($('#vFee').value) || 0, assignee: $('#vAsg').value };
+    const patch = { series: $('#vSeries').value.trim(), spec: $('#vSpec').value, length: $('#vLen').value, due: $('#vDue').value, rawUrl: $('#vRaw').value.trim(), capHours: Number($('#vCap').value) || 0, fixedFee: Number($('#vFee').value) || 0, assignee: $('#vAsg').value };
     if (!i) {
       if (state.planPick && state.issues.some(x => x.meta.planId === state.planPick.planId)) return toast('この企画はすでに発注済みです', true);
       const meta = { ...patch, ...(state.planPick || {}), deliveries: [], revisions: [], publishedUrl: '', orderedAt: new Date().toISOString(), orderedBy: me().id };
@@ -1149,7 +1145,7 @@ async function openDetail(n) {
   const ghu = api.issueUrl(n);
   const used = computeUsed()[n] || 0;
   openModal(`
-    <div class="head"><div><div class="note">#${n}${m.planId ? `　企画${esc(m.planId)}` : ''}${m.series ? `　${esc(m.series)}` : ''}　<span class="chip aqua">${ST[i.status].label}</span></div><h2>${esc(i.title)}</h2>${m.word ? `<div style="color:var(--aqua-ink)">🛁 ${esc(m.word)}</div>` : ''}</div><span class="sp"></span><button class="btn sm" data-close>閉じる</button></div>
+    <div class="head"><div><div class="note">#${n}${m.planId ? `　企画${esc(m.planId)}` : ''}${m.series ? `　${esc(m.series)}` : ''}　<span class="chip aqua">${ST[i.status].label}</span></div><h2>${esc(i.title)}</h2></div><span class="sp"></span><button class="btn sm" data-close>閉じる</button></div>
     <div class="meta" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px">${cardBadges(i)}</div>
     ${acts.length ? `<div class="actions">${acts.join('')}</div>` : ''}
     <dl class="kv">

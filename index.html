@@ -57,6 +57,7 @@ main{max-width:1180px;margin:0 auto;padding:18px 16px 80px}
 .f label{font-size:11px;color:var(--ink-3);font-weight:500}
 .f input,.f select,.f textarea{border:1px solid var(--line);background:#fffdf9;border-radius:9px;padding:7px 10px;min-width:0;width:100%}
 .f textarea{min-height:70px;resize:vertical}
+.f input[type=checkbox],.f input[type=radio]{width:auto;padding:0}
 .f input:focus,.f select:focus,.f textarea:focus{outline:2px solid var(--aqua-2);border-color:var(--aqua)}
 .btn{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px 14px;cursor:pointer;font-weight:500;white-space:nowrap}
 .btn:hover{border-color:var(--ink-3)}
@@ -410,6 +411,11 @@ class GitHubBackend {
     try { const j = await this.req('GET', `${this.rp}/contents/${this.p(path)}${this.ref()}`); return { data: JSON.parse(b64dec(j.content)), sha: j.sha }; }
     catch (e) { if (e.status === 404) return { data: null, sha: null }; throw e; }
   }
+  async readText(path) {
+    try { const j = await this.req('GET', `${this.rp}/contents/${this.p(path)}${this.ref()}`); return b64dec(j.content); }
+    catch (e) { if (e.status === 404) return null; throw e; }
+  }
+  fileUrl(path) { return `https://github.com/${this.c.owner}/${this.c.repo}/blob/${this.c.branch || 'main'}/${path.split('/').map(encodeURIComponent).join('/')}`; }
   async getSha(path) {
     try { return (await this.req('GET', `${this.rp}/contents/${this.p(path)}${this.ref()}`)).sha; }
     catch (e) { if (e.status === 404) return null; throw e; }
@@ -462,12 +468,15 @@ class DemoBackend {
   }
   async readJSON(path) { const f = this.s.files[path]; return f ? { data: JSON.parse(b64dec(f.content)), sha: f.sha } : { data: null, sha: null }; }
   async getSha(path) { return this.s.files[path]?.sha || null; }
+  async readText(path) { return DEMO_PLANS[path] ?? null; }
+  fileUrl() { return null; }
   async writeB64(path, content, sha) {
     const cur = this.s.files[path];
     if (cur && cur.sha !== sha) { const e = new Error('conflict'); e.status = 409; throw e; }
     this.s.files[path] = { content, sha: uid() }; this.save(); return {};
   }
   async listDir(path) {
+    if (path === 'daihon/pdf') return [{ name: '070-insta-ai-douga.pdf', type: 'file' }];
     const pre = path.replace(/\/$/, '') + '/'; const out = new Map();
     for (const k of Object.keys(this.s.files)) if (k.startsWith(pre)) { const rest = k.slice(pre.length); const name = rest.split('/')[0]; out.set(name, rest.includes('/') ? 'dir' : 'file'); }
     return [...out].map(([name, type]) => ({ name, type }));
@@ -507,10 +516,76 @@ const isOwner = () => me().role === 'owner';
 /* =========================================================
    動画Issue：メタデータ
    ========================================================= */
+/* =========================================================
+   企画リスト（videos/*.md と docs/index.md）
+   ========================================================= */
+const DEMO_PLANS = {
+  'docs/index.md': `| # | タイトル | L | F | T | シリーズ | 公開 | 尺 | 状態 | ファイル |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 001 | お風呂で思いついた一言だけで、AIとアプリを作ってみた | L2 | F2 | T3 | 100個企画 #1 | 2026-08-28 | 18分 | 承認済 | \`001-ofuro-hitokoto.md\` |
+| 019 | AIでアプリが作れる時代、エンジニアの仕事はどう変わるのか | L3 | F3 | T4 | 対談 | — | 20分 | レビュー待ち | \`019-engineer-no-shigoto.md\` |
+| 070 | インスタに出てくるAI動画、0から作ってみた | L2 | F2 | T3 | 単発 | — | 18分 | 撮影 | \`070-insta-ai-douga.md\` |`,
+  'videos/001-ofuro-hitokoto.md': `---\nid: "001"\ntitle: "お風呂で思いついた一言だけで、AIとアプリを作ってみた"\nseries: 100個企画 #1\nlength_min: 18\nlayout_main: B\nlayout_sub: A\ncameras: [ひき, 手元]\nscreen_rec: true\ntelop_count: 12\nbgm: L2\nedit_target_min: 150\nstatus: 承認済\n---\n\n# お風呂で思いついた一言だけで、AIとアプリを作ってみた\n\n## 構成\n\n| 時間 | 内容 |\n| --- | --- |\n| 0:00 | 完成したアプリを見せる |\n| 0:30 | 今日のお題を宣言 |\n\n## 画面設計\n\n主レイアウトBで画面録画を大きく。\n\n## 必要素材\n\n- 画面録画\n`,
+  'videos/070-insta-ai-douga.md': `---\nid: "070"\ntitle: "インスタに出てくるAI動画、0から作ってみた"\nseries: 単発\nlength_min: 18\nlayout_main: B\nlayout_sub: A\ncameras: [ひき, より, 斜め]\nscreen_rec: true\ntelop_count: 12\nbgm: L2\nedit_target_min: 120\nstatus: 撮影\n---\n\n## 構成\n\n冒頭30秒で完成した広告動画を見せる。\n`
+};
+const PLAN_READY = ['承認済', '撮影', '編集']; // 発注の候補として最初に出す状態
+const LAYOUT_LABEL = { A: 'A', B: 'B', C: 'C' };
+async function loadPlans(force) {
+  if (state.plans && !force) return state.plans;
+  const md = await api.readText('docs/index.md');
+  if (!md) throw new Error('企画一覧（docs/index.md）が見つかりません');
+  const plans = [];
+  for (const line of md.split('\n')) {
+    if (!/^\|\s*\d{3}\s*\|/.test(line)) continue;
+    const c = line.split('|').slice(1, -1).map(x => x.trim());
+    if (c.length < 10) continue;
+    plans.push({ id: c[0], title: c[1], series: c[5], publish: c[6] === '—' ? '' : c[6], length: c[7], status: c[8], file: c[9].replace(/`/g, '') });
+  }
+  let pdfs = [];
+  try { pdfs = (await api.listDir('daihon/pdf')).map(f => f.name); } catch {}
+  plans.forEach(pl => { const base = pl.file.replace(/\.md$/, ''); pl.script = pdfs.includes(base + '.pdf') ? `daihon/pdf/${base}.pdf` : ''; });
+  state.plans = plans;
+  return plans;
+}
+function parseFrontmatter(text) {
+  const m = /^---\s*\n([\s\S]*?)\n---/.exec(text || ''); const fm = {};
+  if (!m) return fm;
+  for (const raw of m[1].split('\n')) {
+    if (/^\s/.test(raw) || !/^[A-Za-z_]+:/.test(raw)) continue; // 入れ子（kpi など）は使わない
+    const k = raw.slice(0, raw.indexOf(':')); let v = raw.slice(raw.indexOf(':') + 1).trim();
+    if (/^"/.test(v)) v = v.replace(/^"([^"]*)".*$/, '$1');
+    else v = v.replace(/\s+#.*$/, '').trim();
+    if (/^\[.*\]$/.test(v)) v = v.slice(1, -1).split(',').map(x => x.trim()).filter(Boolean);
+    fm[k] = v;
+  }
+  return fm;
+}
+function planSection(text, name) {
+  const re = new RegExp(`^## ${name}\\s*$([\\s\\S]*?)(?=^## |(?![\\s\\S]))`, 'm');
+  const m = re.exec(text || ''); return m ? m[1].trim() : '';
+}
+function specFromPlan(fm, text) {
+  const lines = ['【編集の目安（企画ファイルより）】'];
+  if (fm.length_min) lines.push(`- 尺：${fm.length_min}分`);
+  if (fm.layout_main) lines.push(`- レイアウト：主 ${fm.layout_main}${fm.layout_sub ? ` ／ 副 ${fm.layout_sub}` : ''}`);
+  if (Array.isArray(fm.cameras) && fm.cameras.length) lines.push(`- カメラ：${fm.cameras.join('・')}`);
+  if (fm.screen_rec) lines.push(`- 画面録画：${fm.screen_rec === 'true' ? 'あり' : 'なし'}`);
+  if (fm.telop_count) lines.push(`- 強調テロップ：${fm.telop_count}個`);
+  if (fm.bgm) lines.push(`- BGM：Epidemic Sound プレイリスト ${fm.bgm}`);
+  if (fm.edit_target_min) lines.push(`- 編集時間の目標：${fm.edit_target_min}分`);
+  for (const sec of ['構成', '画面設計', '必要素材']) {
+    const body = planSection(text, sec);
+    if (body) lines.push('', `【${sec}】`, body);
+  }
+  return lines.join('\n');
+}
+
 function buildBody(meta) {
   const json = JSON.stringify(meta, null, 1).replace(/-->/g, '--\\u003e');
   const rows = [
-    ['回', meta.episode ? `第${meta.episode}回` : '—'],
+    ['企画', meta.planId ? `${meta.planId} ${meta.planTitle || ''}${meta.planUrl ? `（${meta.planUrl}）` : ''}` : '—'],
+    ['台本', meta.scriptUrl || '—'],
+    ['シリーズ', meta.series || '—'],
     ['お風呂ワード', meta.word || '—'],
     ['納期', meta.due || '—'],
     ['尺の目安', meta.length || '—'],
@@ -927,7 +1002,7 @@ function renderVid() {
     const list = state.issues.filter(i => i.status === s.key).sort((a, b) => (a.meta.due || '9').localeCompare(b.meta.due || '9'));
     return `<div class="col"><h3><span>${s.label}</span><span>${list.length}</span></h3>${list.map(i => `
       <div class="vcard" data-n="${i.number}">
-        <div class="no">#${i.number}${i.meta.episode ? `　第${i.meta.episode}回` : ''}</div>
+        <div class="no">#${i.number}${i.meta.planId ? `　企画${esc(i.meta.planId)}` : ''}${i.meta.series ? `　${esc(i.meta.series)}` : ''}</div>
         <div class="ttl">${esc(i.title)}</div>
         ${i.meta.word ? `<div class="word">🛁 ${esc(i.meta.word)}</div>` : ''}
         <div class="meta">${cardBadges(i)}</div>
@@ -947,17 +1022,24 @@ $('#modal').addEventListener('mousedown', e => { if (e.target.id === 'modal') cl
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
 function videoForm(i) {
-  const m = i?.meta || { assignee: editors()[0]?.id, length: '10〜20分' };
+  const m = i?.meta || { assignee: editors()[0]?.id };
+  const planBlock = i
+    ? `<div class="f full"><label>企画</label><div>${m.planId ? `${esc(m.planId)} ${esc(m.planTitle || '')}` : '（企画の紐づけなし）'}</div></div>`
+    : `<div class="f full"><label for="vPlan">企画を選ぶ（GitHub の企画リストから）</label>
+         <select id="vPlan"><option value="">読み込み中…</option></select>
+         <label style="display:flex;gap:6px;align-items:center;font-size:12px;color:var(--ink-2);margin-top:4px"><input type="checkbox" id="vPlanAll"> 承認済・撮影・編集 以外の企画も表示する</label>
+         <div class="note" id="vPlanInfo">企画を選ぶと、タイトル・尺・編集の目安・台本のリンクを企画ファイルから自動で入れます。</div></div>`;
   return `
   <div class="head"><div><h2>${i ? '発注内容を編集' : '新規発注（個別契約）'}</h2><div class="note">第4条：内容・納期・想定稼働時間を通知し、受託者の承諾で個別契約が成立します</div></div><span class="sp"></span><button class="btn sm" data-close>閉じる</button></div>
   <div class="fgrid">
-    <div class="f full"><label>タイトル</label><input id="vTitle" value="${esc(i?.title || '')}" placeholder="例：シャンプーの泡カウンター"></div>
-    <div class="f"><label>お風呂で思いついた単語</label><input id="vWord" value="${esc(m.word || '')}"></div>
-    <div class="f"><label>回（エピソード番号）</label><input type="number" id="vEp" value="${esc(m.episode || '')}"></div>
-    <div class="f full"><label>仕様・編集指示</label><textarea id="vSpec">${esc(m.spec || '')}</textarea></div>
+    ${planBlock}
+    <div class="f full"><label>タイトル</label><input id="vTitle" value="${esc(i?.title || '')}" placeholder="企画を選ぶと自動で入ります"></div>
+    <div class="f"><label>お風呂で思いついた単語（任意）</label><input id="vWord" value="${esc(m.word || '')}"></div>
+    <div class="f"><label>シリーズ</label><input id="vSeries" value="${esc(m.series || '')}"></div>
+    <div class="f full"><label>仕様・編集指示</label><textarea id="vSpec" style="min-height:160px">${esc(m.spec || '')}</textarea></div>
     <div class="f"><label>尺の目安</label><input id="vLen" value="${esc(m.length || '')}"></div>
     <div class="f"><label>納期</label><input type="date" id="vDue" value="${esc(m.due || '')}"></div>
-    <div class="f full"><label>撮影素材のURL（Googleドライブ等）</label><input id="vRaw" value="${esc(m.rawUrl || '')}"></div>
+    <div class="f full"><label>撮影素材のURL（ふうやさんから届いたGoogleドライブ等）</label><input id="vRaw" value="${esc(m.rawUrl || '')}" placeholder="https://drive.google.com/…"></div>
     <div class="f"><label>上限稼働時間（時間・空欄でなし）</label><input type="number" step="0.5" id="vCap" value="${esc(m.capHours || '')}"></div>
     <div class="f"><label>固定額（円・税別／空欄で時間単価）</label><input type="number" id="vFee" value="${esc(m.fixedFee || '')}"></div>
     <div class="f"><label>担当</label><select id="vAsg">${editors().map(e => `<option value="${e.id}" ${e.id === m.assignee ? 'selected' : ''}>${esc(e.name)}</option>`).join('')}</select></div>
@@ -965,13 +1047,52 @@ function videoForm(i) {
   <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px"><button class="btn" data-close>キャンセル</button><button class="btn pri" id="vSave">${i ? '保存' : '発注する'}</button></div>`;
 }
 $('#btnNewVideo').onclick = () => { openModal(videoForm(null)); bindVideoForm(null); };
+function fillPlanSelect() {
+  const sel = $('#vPlan'); if (!sel || !state.plans) return;
+  const all = $('#vPlanAll').checked;
+  const ordered = new Map(state.issues.filter(x => x.meta.planId).map(x => [x.meta.planId, x]));
+  const list = state.plans.filter(pl => all || PLAN_READY.includes(pl.status));
+  const cur = sel.value;
+  sel.innerHTML = `<option value="">（企画を選ぶ）</option>` + list.map(pl => {
+    const o = ordered.get(pl.id);
+    return `<option value="${esc(pl.id)}" ${o ? 'disabled' : ''} ${pl.id === cur ? 'selected' : ''}>${esc(pl.id)} ${esc(pl.title)}（${esc(pl.status)}${o ? `・発注済 #${o.number}` : ''}）</option>`;
+  }).join('') + `<option value="__none">企画を選ばずに入力する</option>`;
+  if (!list.length) $('#vPlanInfo').textContent = '承認済・撮影・編集の企画がありません。下のチェックを入れると全部の企画から選べます。';
+}
+async function applyPlan(id) {
+  const info = $('#vPlanInfo');
+  state.planPick = null;
+  if (!id || id === '__none') { info.textContent = id ? '企画に紐づけずに発注します。タイトルと指示を入力してください。' : '企画を選ぶと、タイトル・尺・編集の目安・台本のリンクを企画ファイルから自動で入れます。'; return; }
+  const pl = state.plans.find(x => x.id === id); if (!pl) return;
+  info.textContent = '企画ファイルを読み込み中…';
+  const text = await api.readText('videos/' + pl.file);
+  if (text == null) { info.textContent = `videos/${pl.file} が見つかりませんでした。`; return; }
+  const fm = parseFrontmatter(text);
+  $('#vTitle').value = `${pl.id} ${fm.title || pl.title}`;
+  $('#vSeries').value = (pl.series && pl.series !== '—') ? pl.series : (fm.series ? fm.series + (fm.episode ? ` #${fm.episode}` : '') : '');
+  $('#vLen').value = fm.length_min ? `${fm.length_min}分` : pl.length;
+  $('#vSpec').value = specFromPlan(fm, text);
+  if (fm.edit_target_min && !$('#vCap').value) $('#vCap').value = Math.ceil(Number(fm.edit_target_min) / 30) / 2;
+  const planUrl = api.fileUrl('videos/' + pl.file), scriptUrl = pl.script ? api.fileUrl(pl.script) : '';
+  state.planPick = { planId: pl.id, planTitle: fm.title || pl.title, planFile: pl.file, planUrl: planUrl || '', scriptUrl: scriptUrl || '' };
+  info.innerHTML = `企画ファイルから入力しました（状態：${esc(pl.status)}${pl.publish ? `／公開予定 ${esc(pl.publish)}` : ''}）。` +
+    `${planUrl ? ` <a href="${planUrl}" target="_blank" rel="noopener">企画を開く</a>` : ''}${scriptUrl ? ` ／ <a href="${scriptUrl}" target="_blank" rel="noopener">台本PDF</a>` : '（台本PDFはまだありません）'}` +
+    `${fm.edit_target_min ? `<br>上限稼働時間は編集時間の目標（${esc(fm.edit_target_min)}分）から入れています。必要なら変えてください。` : ''}`;
+}
 function bindVideoForm(i) {
   $$('[data-close]', $('#sheet')).forEach(b => b.onclick = closeModal);
+  if (!i) {
+    loadPlans().then(fillPlanSelect).catch(err => { $('#vPlan').innerHTML = '<option value="__none">企画を選ばずに入力する</option>'; $('#vPlanInfo').textContent = `企画リストを読み込めませんでした：${err.message}`; });
+    $('#vPlanAll').onchange = fillPlanSelect;
+    $('#vPlan').onchange = e => guarded(null, () => applyPlan(e.target.value));
+  }
   $('#vSave').onclick = e => guarded(e.currentTarget, async () => {
-    const title = $('#vTitle').value.trim(); if (!title) return toast('タイトルを入力してください', true);
-    const patch = { word: $('#vWord').value.trim(), episode: Number($('#vEp').value) || null, spec: $('#vSpec').value, length: $('#vLen').value, due: $('#vDue').value, rawUrl: $('#vRaw').value.trim(), capHours: Number($('#vCap').value) || 0, fixedFee: Number($('#vFee').value) || 0, assignee: $('#vAsg').value };
+    const title = $('#vTitle').value.trim(); if (!title) return toast('企画を選ぶか、タイトルを入力してください', true);
+    if (!i && !$('#vPlan').value) return toast('企画を選んでください（企画がない場合は「企画を選ばずに入力する」）', true);
+    const patch = { word: $('#vWord').value.trim(), series: $('#vSeries').value.trim(), spec: $('#vSpec').value, length: $('#vLen').value, due: $('#vDue').value, rawUrl: $('#vRaw').value.trim(), capHours: Number($('#vCap').value) || 0, fixedFee: Number($('#vFee').value) || 0, assignee: $('#vAsg').value };
     if (!i) {
-      const meta = { ...patch, deliveries: [], revisions: [], publishedUrl: '', orderedAt: new Date().toISOString(), orderedBy: me().id };
+      if (state.planPick && state.issues.some(x => x.meta.planId === state.planPick.planId)) return toast('この企画はすでに発注済みです', true);
+      const meta = { ...patch, ...(state.planPick || {}), deliveries: [], revisions: [], publishedUrl: '', orderedAt: new Date().toISOString(), orderedBy: me().id };
       const gh = await api.createIssue({ title, body: buildBody(meta), labels: [BASE_LABEL, statusLabel('ordered')] });
       await api.addComment(gh.number, `📝 **発注**（${me().name}）\n納期：${meta.due || '未定'}　上限稼働：${meta.capHours ? meta.capHours + '時間' : 'なし'}${meta.fixedFee ? `　固定額：${yen(meta.fixedFee)}円` : ''}\n担当の方は内容を確認し「承諾して着手」を押してください（2営業日以内）。`);
       toast('発注しました');
@@ -1009,10 +1130,11 @@ async function openDetail(n) {
   const ghu = api.issueUrl(n);
   const used = computeUsed()[n] || 0;
   openModal(`
-    <div class="head"><div><div class="note">#${n}${m.episode ? `　第${m.episode}回` : ''}　<span class="chip aqua">${ST[i.status].label}</span></div><h2>${esc(i.title)}</h2>${m.word ? `<div style="color:var(--aqua-ink)">🛁 ${esc(m.word)}</div>` : ''}</div><span class="sp"></span><button class="btn sm" data-close>閉じる</button></div>
+    <div class="head"><div><div class="note">#${n}${m.planId ? `　企画${esc(m.planId)}` : ''}${m.series ? `　${esc(m.series)}` : ''}　<span class="chip aqua">${ST[i.status].label}</span></div><h2>${esc(i.title)}</h2>${m.word ? `<div style="color:var(--aqua-ink)">🛁 ${esc(m.word)}</div>` : ''}</div><span class="sp"></span><button class="btn sm" data-close>閉じる</button></div>
     <div class="meta" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px">${cardBadges(i)}</div>
     ${acts.length ? `<div class="actions">${acts.join('')}</div>` : ''}
     <dl class="kv">
+      ${m.planUrl || m.scriptUrl ? `<dt>企画・台本</dt><dd>${m.planUrl ? `<a href="${m.planUrl}" target="_blank" rel="noopener">企画ファイル</a>` : ''}${m.scriptUrl ? `　<a href="${m.scriptUrl}" target="_blank" rel="noopener">台本PDF</a>` : ''}</dd>` : ''}
       <dt>仕様・指示</dt><dd style="white-space:pre-wrap">${linkify(m.spec || '—')}</dd>
       <dt>尺の目安</dt><dd>${esc(m.length || '—')}</dd>
       <dt>納期</dt><dd>${esc(m.due || '—')}</dd>

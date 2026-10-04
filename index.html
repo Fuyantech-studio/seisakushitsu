@@ -963,7 +963,7 @@ function invoiceHTML() {
 }
 async function makePdf(mode) {
   if (!window.html2pdf) throw new Error('PDFライブラリを読み込めませんでした（ネット接続を確認してください）');
-  if (!getIssuer().bank) toast('振込先が未設定です。設定画面の「請求書の発行者情報」から入力できます');
+  if (!getIssuer().bank) toast('振込先が未設定です。設定画面の「請求書に記載するあなたの情報」から入力できます');
   await document.fonts.ready;
   // 1ページ目（請求書）と2ページ目以降（稼働報告書）を別々に描画して結合
   const [p1, p2] = invoiceHTML().split('<div class="pb"></div>');
@@ -1266,7 +1266,9 @@ function openSettings() {
       </select>
       <div class="note">${IS_IOS ? 'iPhone・iPad では、GitHub にログインしている Chrome で開くと非公開の Issue や企画ファイルが見られます。' : 'パソコンではいつものブラウザで開きます。'}</div></div>
 
-    <div class="sec-title">請求書の発行者情報（${esc(memberName(state.worker))}・このブラウザにだけ保存）</div>
+    <div class="${me().role === 'editor' ? '' : 'hide'}">
+    <div class="sec-title">請求書に記載するあなたの情報</div>
+    <div class="note" style="margin:-4px 0 8px">この端末のブラウザにだけ保存され、GitHub には送られません。月末の請求書PDFの発行者欄と振込先に使います。</div>
     <div class="fgrid">
       <div class="f"><label>氏名（ファイル名にも使われます）</label><input id="iName" value="${esc(iss.name)}"></div>
       <div class="f"><label>メール</label><input id="iMail" value="${esc(iss.email)}"></div>
@@ -1274,6 +1276,7 @@ function openSettings() {
       <div class="f full"><label>振込先（銀行名・支店・種別・口座番号・名義）</label><textarea id="iBank">${esc(iss.bank)}</textarea></div>
       <div class="f"><label>適格請求書の登録番号（なければ空欄）</label><input id="iReg" value="${esc(iss.regNo)}" placeholder="T1234567890123"></div>
       <div class="f" style="justify-content:flex-end"><label style="display:flex;gap:6px;align-items:center;font-size:13px;color:var(--ink)"><input type="checkbox" id="iWh" ${iss.withholding ? 'checked' : ''}> 源泉徴収を行う</label></div>
+    </div>
     </div>
 
     <div class="${isOwner() ? '' : 'hide'}">
@@ -1306,7 +1309,7 @@ function openSettings() {
     const cfg = readCfg(); LS.set('fy_cfg', cfg);
     if (IS_IOS) LS.set('fy_link', $('#sLink').value);
     const all = LS.get('fy_issuer', {});
-    all[state.worker] = { name: $('#iName').value.trim() || memberName(state.worker), email: $('#iMail').value.trim(), address: $('#iAddr').value.trim(), bank: $('#iBank').value, regNo: $('#iReg').value.trim(), withholding: $('#iWh').checked };
+    if (me().role === 'editor') all[me().id] = { name: $('#iName').value.trim() || memberName(me().id), email: $('#iMail').value.trim(), address: $('#iAddr').value.trim(), bank: $('#iBank').value, regNo: $('#iReg').value.trim(), withholding: $('#iWh').checked };
     LS.set('fy_issuer', all);
     if (isOwner()) {
       const members = $('#kMembers').value.split('\n').map(l => l.trim()).filter(Boolean).map(l => { const [id, name, role] = l.split(':').map(s => s.trim()); const old = state.settings.members.find(m => m.id === id) || {}; return { ...old, id, name: name || id, role: ['owner', 'editor', 'partner'].includes(role) ? role : 'partner' }; });

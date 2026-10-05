@@ -1,4 +1,4 @@
-# Fuyantech制作室
+# PIRTIDA制作室
 
 Fuyan Tech の動画編集外注で使う、勤務管理（稼働記録・月末の請求書PDF）と動画納品管理のWebアプリ。
 

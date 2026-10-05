@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Fuyantech制作室</title>
+<title>PIRTIDA制作室</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Fuyantech制作室">
+<meta name="apple-mobile-web-app-title" content="PIRTIDA制作室">
 <meta name="theme-color" content="#f4f1ea">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -33,6 +33,8 @@ header.top{position:sticky;top:0;padding-top:env(safe-area-inset-top,0px);z-inde
 .brand .mark{width:34px;height:34px;border-radius:10px;background:var(--aqua);display:grid;place-items:center;flex:none}
 .brand h1{font-family:"Zen Maru Gothic","Noto Sans JP",sans-serif;font-size:17px;margin:0;line-height:1.2}
 .brand small{display:block;color:var(--ink-3);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand select.chan{display:block;margin-top:2px;font-size:12px;padding:2px 6px;border:1px solid var(--line);border-radius:6px;background:var(--bg-2,#fff);color:var(--ink-2);max-width:220px}
+.line-steps.only-vid .chev{display:none}
 /* 画面切り替え：制作の流れ（1→3）をそのままナビにする。稼働・請求は裏方として右端に分ける */
 .line{border-top:1px solid var(--line)}
 .line-in{max-width:1180px;margin:0 auto;padding:0 16px;display:flex;align-items:stretch;gap:6px;overflow-x:auto;scrollbar-width:none}
@@ -342,8 +344,8 @@ tr.rv-blk.has-note td:first-child,tr.rv-blk.has-note th:first-child{box-shadow:i
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="12" rx="2"/><path d="M3 9l2-5 16 0-2 5"/><path d="M8 4l2 5M14 4l2 5"/></svg>
       </div>
       <div style="min-width:0">
-        <h1>Fuyantech制作室</h1>
-        <small id="projName"></small>
+        <h1>PIRTIDA制作室</h1>
+        <small id="projName"></small><select id="chanSel" class="chan hide" aria-label="チャンネルを切り替える"></select>
       </div>
     </div>
     <div class="who">
@@ -376,6 +378,7 @@ tr.rv-blk.has-note td:first-child,tr.rv-blk.has-note th:first-child{box-shadow:i
 
   <!-- ========== ホーム ========== -->
   <section id="tab-home" class="hide"><div id="home"></div></section>
+  <section id="tab-none" class="hide"><div class="card"><h2>見られる画面がありません</h2><p class="note" id="noneMsg">このトークンで見られるリポジトリがありません。設定（歯車マーク）で、接続先の Organization とトークンを確認してください。</p></div></section>
 
   <!-- ========== 勤務管理 ========== -->
   <section id="tab-att">
@@ -638,6 +641,20 @@ class GitHubBackend {
   addComment(n, body) { return this.req('POST', `${this.rp}/issues/${n}/comments`, { body }); }
   whoami() { return this.req('GET', '/user'); }
   repoInfo() { return this.req('GET', this.rp); }
+  // バイナリ（台本PDFなど）を base64 で読む。1MB を超えるファイルは blob から取る
+  async readB64(path) {
+    const j = await this.req('GET', `${this.rp}/contents/${this.p(path)}${this.ref()}`);
+    if (j.content && j.encoding === 'base64') return j.content.replace(/\s/g, '');
+    return (await this.req('GET', `${this.rp}/git/blobs/${j.sha}`)).content.replace(/\s/g, '');
+  }
+  // このトークンで見えるリポジトリ（オーナー配下）。Organization なら /orgs、個人なら /user/repos から絞る
+  async listRepos() {
+    const own = this.c.owner.toLowerCase(); let all = [], page = 1, url;
+    try { await this.req('GET', `/orgs/${encodeURIComponent(this.c.owner)}`); url = p => `/orgs/${encodeURIComponent(this.c.owner)}/repos?type=all&per_page=100&page=${p}`; }
+    catch (e) { if (e.status !== 404) throw e; url = p => `/user/repos?per_page=100&page=${p}`; }
+    while (true) { const r = await this.req('GET', url(page)); all = all.concat(r); if (r.length < 100) break; page++; }
+    return all.filter(r => r.owner?.login?.toLowerCase() === own).map(r => ({ name: r.name, private: r.private, permissions: r.permissions || {} }));
+  }
   async ensureLabels() {
     const want = [{ name: BASE_LABEL, color: '1f8a8c' }, ...STATUSES.map((s, i) => ({ name: statusLabel(s.key), color: ['c5def5','fbca04','0e8a16','d93f0b','5319e7','1d2a3a'][i] }))];
     const have = await this.req('GET', `${this.rp}/labels?per_page=100`);
@@ -693,9 +710,126 @@ class DemoBackend {
   async listComments(n) { return this.s.comments[n] || []; }
   async addComment(n, body) { const c = { id: Date.now() * 10 + Math.floor(Math.random() * 10), body, created_at: new Date().toISOString(), html_url: '#', user: { login: me().name } }; (this.s.comments[n] ||= []).push(c); this.save(); return c; }
   async whoami() { return { login: 'demo' }; }
+  async readB64(path) { return this.s.files[path]?.content || b64enc('%PDF-1.4 demo'); }
+  async listRepos() { return []; }
   async ensureLabels() {}
   issueUrl() { return null; }
   repoUrl() { return null; }
+}
+
+
+/* =========================================================
+   チャンネル（GitHub Organization）とリポジトリの割り当て
+   1チャンネル＝1 Organization
+     kikaku           ネタ・企画・台本・案件     （オーナー・パートナー）
+     hensyu-<編集者>  発注と納品                 （オーナー・パートナー・その編集者）
+     seikyu-<編集者>  稼働と請求                 （オーナー・その編集者）
+   どのリポジトリが見えるかで、役割と画面（タブ）が決まる。GitHub の権限そのものが鍵。
+   hensyu-* / seikyu-* が1つもなければ、従来の1リポジトリ構成（旧方式）で動く。
+   ========================================================= */
+const HENSYU = 'hensyu-', SEIKYU = 'seikyu-';
+const CHANNEL_FILE = DATA + 'channel.json';   // 企画リポジトリ：チャンネル名・オーナーとパートナーの名前
+const EDITOR_FILE = 'editor.json';            // hensyu-*：編集者の名前・無償修正回数・検収期間
+const TERMS_FILE = 'settings.json';           // seikyu-*：単価・請求先・報告日・支払日
+const ws = { mode: 'legacy', login: '', repos: [], kikaku: null, hensyu: {}, seikyu: {}, editorInfo: {}, terms: {}, channel: null, role: null };
+const termsOf = w => ({ ...state.settings, ...(ws.terms[w] || {}) });
+const canSeePlans = () => ws.mode !== 'org' || !!ws.kikaku;
+const canSeeBilling = w => ws.mode !== 'org' || !!ws.seikyu[w];
+const NO_PLANS = new Proxy({ demo: false }, { get: (t, k) => k in t ? t[k] : () => { throw new Error('企画リポジトリを見る権限がありません'); } });
+
+// 発注（Issue）を複数の hensyu-* にまたがって扱う。Issue の鍵は「リポジトリ名/番号」
+class OrdersHub {
+  constructor(entries) { this.e = entries; }   // [{ repo, be, editor }]
+  find(key) { const k = String(key), i = k.lastIndexOf('/'); const x = this.e.find(x => x.repo === k.slice(0, i)); if (!x) throw new Error('発注のリポジトリが見つかりません：' + k); return { x, be: x.be, no: Number(k.slice(i + 1)) }; }
+  tag(gh, repo) { if (gh) gh.__repo = repo; return gh; }
+  async listIssues() { return (await Promise.all(this.e.map(async x => (await x.be.listIssues()).map(g => this.tag(g, x.repo))))).flat(); }
+  async getIssue(k) { const { x, be, no } = this.find(k); return this.tag(await be.getIssue(no), x.repo); }
+  repoFor(assignee) { return this.e.find(x => x.editor === assignee) || this.e.find(x => !x.editor) || null; }
+  async createIssue(o, assignee) {
+    const x = this.repoFor(assignee);
+    if (!x) throw new Error(`${memberName(assignee)}さんの発注用リポジトリ（${HENSYU}${assignee}）が見つかりません`);
+    return this.tag(await x.be.createIssue(o), x.repo);
+  }
+  updateIssue(k, o) { const { be, no } = this.find(k); return be.updateIssue(no, o); }
+  listComments(k) { const { be, no } = this.find(k); return be.listComments(no); }
+  addComment(k, b) { const { be, no } = this.find(k); return be.addComment(no, b); }
+  issueUrl(k) { try { const { be, no } = this.find(k); return be.issueUrl(no); } catch { return null; } }
+  backend(k) { return this.find(k).be; }
+  repoLinks() { return this.e.map(x => ({ name: x.repo, url: x.be.repoUrl() })).filter(l => l.url); }
+  async ensureLabels() { for (const x of this.e) await x.be.ensureLabels(); }
+}
+let hub = null;
+
+// 見えるリポジトリから、役割・メンバー・契約条件を組み立てる
+async function discover(root) {
+  const c = state.cfg;
+  ws.login = (await root.whoami()).login || '';
+  ws.repos = await root.listRepos().catch(() => []);
+  const names = ws.repos.map(r => r.name);
+  if (!names.some(n => n.startsWith(HENSYU) || n.startsWith(SEIKYU))) return false;   // 旧方式
+  ws.mode = 'org';
+  const be = repo => new GitHubBackend({ ...c, repo });
+  const k = ws.repos.find(r => r.name === c.repo);
+  ws.kikaku = k ? { be: root, admin: !!k.permissions.admin } : null;
+  for (const n of names) {
+    if (n.startsWith(HENSYU)) ws.hensyu[n.slice(HENSYU.length)] = be(n);
+    if (n.startsWith(SEIKYU)) ws.seikyu[n.slice(SEIKYU.length)] = be(n);
+  }
+  ws.role = ws.kikaku ? (ws.kikaku.admin ? 'owner' : 'partner') : 'editor';
+  const ids = [...new Set([...Object.keys(ws.hensyu), ...Object.keys(ws.seikyu)])];
+  const [chan] = await Promise.all([
+    ws.kikaku ? root.readJSON(CHANNEL_FILE).then(r => r.data).catch(() => null) : null,
+    ...ids.map(async id => {
+      const [ed, t] = await Promise.all([
+        ws.hensyu[id] ? ws.hensyu[id].readJSON(EDITOR_FILE).then(r => r.data).catch(() => null) : null,
+        ws.seikyu[id] ? ws.seikyu[id].readJSON(TERMS_FILE).then(r => ({ data: r.data, sha: r.sha })).catch(() => null) : null
+      ]);
+      ws.editorInfo[id] = ed || {};
+      const pick = (o, keys) => Object.fromEntries(keys.filter(x => o && o[x] != null).map(x => [x, o[x]]));
+      ws.terms[id] = { ...pick(ed, ['freeRevisions', 'inspectionDays']), ...(t?.data || {}) };
+    })
+  ]);
+  ws.channel = chan || {};
+  const members = (ws.channel.members || []).filter(m => m.role !== 'editor').map(m => ({ ...m }));
+  ids.forEach(id => members.push({ id, name: ws.editorInfo[id].name || id, role: 'editor', gh: ws.editorInfo[id].login || '' }));
+  const same = m => m.gh && m.gh.toLowerCase() === ws.login.toLowerCase();
+  let mine = members.find(m => same(m) && (m.role === ws.role || ws.role !== 'editor'));
+  if (!mine && ws.role === 'editor') mine = members.find(m => m.role === 'editor' && ws.hensyu[m.id]);
+  if (!mine) { const cand = members.filter(m => m.role === ws.role); mine = cand.length === 1 ? cand[0] : cand.find(m => m.id === c.me); }
+  if (!mine) { mine = { id: ws.login, name: ws.login, role: ws.role, gh: ws.login }; members.push(mine); }
+  mine.role = ws.role;   // 役割は GitHub の権限で決まる（名簿の記載より優先）
+  state.cfg = { ...c, me: mine.id };
+  state.settings = { ...DEFAULT_SETTINGS, ...pickKeys(ws.channel, ['project', 'client', 'categories', 'taxRate', 'reportDay', 'payDay', 'rate']), members };
+  return true;
+}
+const pickKeys = (o, keys) => Object.fromEntries(keys.filter(k => o && o[k] != null).map(k => [k, o[k]]));
+function allowedTabs() {
+  if (ws.mode !== 'org') return TABS;
+  const t = [];
+  if (ws.kikaku) t.push('home', 'ideas', 'review');
+  if (Object.keys(ws.hensyu).length) t.push('vid');
+  if (Object.keys(ws.seikyu).length) t.push('att');
+  return t;
+}
+// 発注時に、企画リポジトリの台本PDFを編集者の hensyu-* にコピーする（編集者は企画リポジトリを見られないため）
+async function sendScript(key, scriptPath) {
+  const be = hub.backend(key), no = String(key).split('/').pop();
+  const dest = `orders/${no}/${scriptPath.split('/').pop()}`;
+  const b64 = await api.readB64(scriptPath);
+  await be.writeB64(dest, b64, await be.getSha(dest), `台本PDFを発注 #${no} に添付（${me().name}）`);
+  return be.fileUrl(dest);
+}
+
+/* チャンネル（Organization）の切り替え：このブラウザに保存した接続先の一覧 */
+const chanKey = c => `${(c.owner || '').toLowerCase()}/${(c.repo || '').toLowerCase()}`;
+function channels() { const l = LS.get('fy_channels', []); const cur = LS.get('fy_cfg', null); if (cur && cur.token && !l.some(x => chanKey(x) === chanKey(cur))) l.push(cur); return l; }
+function saveChannel(cfg) { const l = channels().filter(x => chanKey(x) !== chanKey(cfg)); l.push(cfg); LS.set('fy_channels', l); LS.set('fy_cfg', cfg); }
+function removeChannel(cfg) { const l = channels().filter(x => chanKey(x) !== chanKey(cfg)); LS.set('fy_channels', l); LS.set('fy_cfg', l[0] || { ...cfg, token: '' }); }
+function renderChanSel() {
+  const l = channels(), sel = $('#chanSel'), cur = chanKey(state.cfg);
+  sel.classList.toggle('hide', l.length < 2); $('#projName').classList.toggle('hide', l.length >= 2);
+  sel.innerHTML = l.map(c => `<option value="${esc(chanKey(c))}" ${chanKey(c) === cur ? 'selected' : ''}>${esc(c.label || c.owner)}</option>`).join('');
+  sel.onchange = () => { const c = l.find(x => chanKey(x) === sel.value); if (c) { LS.set('fy_cfg', c); LS.del('fy_tab'); location.reload(); } };
 }
 
 /* =========================================================
@@ -803,7 +937,7 @@ function specFromPlan(fm, text) {
 function buildBody(meta) {
   const json = JSON.stringify(meta, null, 1).replace(/-->/g, '--\\u003e');
   const rows = [
-    ['企画', meta.planId ? `${meta.planId} ${meta.planTitle || ''}${meta.planUrl ? `（${meta.planUrl}）` : ''}` : '—'],
+    ['企画', meta.planId ? `${meta.planId} ${meta.planTitle || ''}${meta.planUrl && ws.mode !== 'org' ? `（${meta.planUrl}）` : ''}` : '—'],
     ['台本', meta.scriptUrl || '—'],
     ['シリーズ', meta.series || '—'],
     ['納期', meta.due || '—'],
@@ -815,7 +949,7 @@ function buildBody(meta) {
     ['最新の納品物', meta.deliveries?.length ? meta.deliveries.at(-1).url : '—'],
     ['公開URL', meta.publishedUrl || '—']
   ];
-  return `<!-- fy-meta\n${json}\n-->\n\n### 編集の発注${meta.planId ? `：企画${meta.planId}` : ''}\n\n#### 仕様・指示\n${meta.spec || '（なし）'}\n\n| 項目 | 内容 |\n|---|---|\n${rows.map(r => `| ${r[0]} | ${String(r[1]).replace(/\|/g, '｜')} |`).join('\n')}\n\n---\n<sub>このIssueは「Fuyantech制作室」から更新されます。先頭のメタデータは手で編集しないでください。</sub>`;
+  return `<!-- fy-meta\n${json}\n-->\n\n### 編集の発注${meta.planId ? `：企画${meta.planId}` : ''}\n\n#### 仕様・指示\n${meta.spec || '（なし）'}\n\n| 項目 | 内容 |\n|---|---|\n${rows.map(r => `| ${r[0]} | ${String(r[1]).replace(/\|/g, '｜')} |`).join('\n')}\n\n---\n<sub>このIssueは「PIRTIDA制作室」から更新されます。先頭のメタデータは手で編集しないでください。</sub>`;
 }
 function parseIssue(gh) {
   const m = /<!-- fy-meta\s*([\s\S]*?)\s*-->/.exec(gh.body || '');
@@ -823,20 +957,25 @@ function parseIssue(gh) {
   meta.deliveries ||= []; meta.revisions ||= [];
   const names = (gh.labels || []).map(l => typeof l === 'string' ? l : l.name);
   const st = STATUSES.find(s => names.includes(statusLabel(s.key)))?.key || 'ordered';
-  return { number: gh.number, title: gh.title, url: gh.html_url, state: gh.state, status: st, meta, labels: names, created: gh.created_at };
+  const repo = gh.__repo || '';
+  return { number: `${repo}/${gh.number}`, no: gh.number, repo, title: gh.title, url: gh.html_url, state: gh.state, status: st, meta, labels: names, created: gh.created_at };
 }
 
 /* =========================================================
    稼働ログ（worklog/{worker}/{YYYY-MM}.json）
    ========================================================= */
-const wlPath = (w, m) => `${DATA}worklog/${w}/${m}.json`;
+const wlPath = (w, m) => ws.mode === 'org' ? `worklog/${m}.json` : `${DATA}worklog/${w}/${m}.json`;
+const wlDir = w => ws.mode === 'org' ? 'worklog' : `${DATA}worklog/${w}`;
+const invPath = (w, m, f) => ws.mode === 'org' ? `invoices/${m}/${f}` : `${DATA}invoices/${m}/${f}`;
+// 稼働・請求データの置き場所：新方式は seikyu-<編集者>、旧方式は企画リポジトリの seisaku/
+const billApi = w => { if (ws.mode !== 'org') return api; const b = ws.seikyu[w]; if (!b) throw new Error(`${memberName(w)}さんの請求リポジトリ（${SEIKYU}${w}）を見る権限がありません`); return b; };
 const emptyWL = (w, m) => ({ worker: w, month: m, entries: [], expenses: [], status: 'draft', history: [] });
 async function loadWorklogs(worker) {
-  const files = await api.listDir(`${DATA}worklog/${worker}`);
+  const files = await billApi(worker).listDir(wlDir(worker));
   const months = files.filter(f => f.type === 'file' && /^\d{4}-\d{2}\.json$/.test(f.name)).map(f => f.name.slice(0, 7));
   if (!months.includes(state.month)) months.push(state.month);
   await Promise.all(months.map(async m => {
-    const r = await api.readJSON(wlPath(worker, m));
+    const r = await billApi(worker).readJSON(wlPath(worker, m));
     state.worklogs[`${worker}/${m}`] = { data: r.data || emptyWL(worker, m), sha: r.sha };
   }));
 }
@@ -848,14 +987,14 @@ function curWL() {
 async function mutateWL(fn, message) {
   const w = state.worker, m = state.month, path = wlPath(w, m);
   for (let i = 0; i < 3; i++) {
-    const r = await api.readJSON(path);
+    const r = await billApi(w).readJSON(path);
     const data = r.data || emptyWL(w, m);
     const res = fn(data);
     if (res === false) return;
     try {
-      await api.writeB64(path, b64enc(JSON.stringify(data, null, 2)), r.sha, `${message}（${me().name}）`);
+      await billApi(w).writeB64(path, b64enc(JSON.stringify(data, null, 2)), r.sha, `${message}（${me().name}）`);
       state.worklogs[`${w}/${m}`] = { data, sha: null };
-      const fresh = await api.readJSON(path); state.worklogs[`${w}/${m}`].sha = fresh.sha;
+      const fresh = await billApi(w).readJSON(path); state.worklogs[`${w}/${m}`].sha = fresh.sha;
       return;
     } catch (e) { if (e.status !== 409 && e.status !== 422) throw e; }
   }
@@ -868,7 +1007,7 @@ function computeBilling() {
   for (const [k, v] of Object.entries(state.worklogs)) if (k.startsWith(state.worker + '/')) all.push(...v.data.entries);
   all.sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start));
   const used = {}, res = {};
-  const iss = Object.fromEntries(state.issues.map(i => [i.number, i]));
+  const iss = Object.fromEntries(workerIssues().map(i => [i.no, i]));
   for (const e of all) {
     const I = e.issue ? iss[e.issue] : null;
     if (e.free) { res[e.id] = { bill: 0, reason: '無償修正' }; continue; }
@@ -887,7 +1026,7 @@ function computeBilling() {
   return { res, used };
 }
 function monthSummary() {
-  const S = state.settings, wl = curWL(), { res, used } = computeBilling();
+  const S = termsOf(state.worker), wl = curWL(), { res, used } = computeBilling();
   const total = wl.entries.reduce((a, e) => a + e.minutes, 0);
   const bill = wl.entries.reduce((a, e) => a + (res[e.id]?.bill ?? e.minutes), 0);
   const byCat = {};
@@ -909,18 +1048,18 @@ function monthSummary() {
    勤務管理 UI
    ========================================================= */
 function issueOptions(sel) {
-  const open = state.issues.filter(i => i.status !== 'published' || i.number == sel);
-  return `<option value="">（なし）</option>` + open.map(i => `<option value="${i.number}" ${i.number == sel ? 'selected' : ''}>#${i.number} ${esc(i.title)}</option>`).join('');
+  const open = workerIssues().filter(i => i.status !== 'published' || i.no == sel);
+  return `<option value="">（なし）</option>` + open.map(i => `<option value="${i.no}" ${i.no == sel ? 'selected' : ''}>#${i.no} ${esc(i.title)}</option>`).join('');
 }
-function catOptions(sel) { return state.settings.categories.map(c => `<option ${c === sel ? 'selected' : ''}>${esc(c)}</option>`).join(''); }
+function catOptions(sel) { return termsOf(state.worker).categories.map(c => `<option ${c === sel ? 'selected' : ''}>${esc(c)}</option>`).join(''); }
 function locked() { const s = curWL().status; return s !== 'draft' && !isOwner(); }
 
 function renderAtt() {
   const [y, m] = state.month.split('-').map(Number);
   $('#mLabel').textContent = `${y}年${m}月`;
   const ws = $('#workerSel');
-  ws.innerHTML = editors().map(e => `<option value="${e.id}" ${e.id === state.worker ? 'selected' : ''}>${esc(e.name)}</option>`).join('');
-  $('#workerWrap').classList.toggle('hide', editors().length < 2 && !isOwner());
+  ws.innerHTML = editors().filter(e => canSeeBilling(e.id)).map(e => `<option value="${e.id}" ${e.id === state.worker ? 'selected' : ''}>${esc(e.name)}</option>`).join('');
+  $('#workerWrap').classList.toggle('hide', editors().filter(e => canSeeBilling(e.id)).length < 2 && !isOwner());
 
   const wl = curWL();
   const stMap = { draft: ['下書き', ''], submitted: ['提出済（承認待ち）', 'warn'], approved: ['承認済', 'ok'] };
@@ -932,7 +1071,7 @@ function renderAtt() {
   // フォーム
   const tCat = $('#tCat'), eCat = $('#eCat');
   const timer = LS.get('fy_timer', null);
-  tCat.innerHTML = catOptions(timer?.category); eCat.innerHTML = catOptions(eCat.value || state.settings.categories[0]);
+  tCat.innerHTML = catOptions(timer?.category); eCat.innerHTML = catOptions(eCat.value || termsOf(state.worker).categories[0]);
   $('#tIssue').innerHTML = issueOptions(timer?.issue);
   const eIssueVal = $('#eIssue').value; $('#eIssue').innerHTML = issueOptions(eIssueVal);
   if (timer) $('#tDesc').value = timer.desc || '';
@@ -960,7 +1099,7 @@ function renderAtt() {
     : `<tr><td class="empty" style="padding:12px">実費はありません</td></tr>`;
 
   // 集計
-  const st = state.settings;
+  const st = termsOf(state.worker);
   $('#sumDl').innerHTML = `
     <dt>稼働時間 合計</dt><dd>${fmtHM(S.total)}</dd>
     ${S.excluded ? `<dt>うち請求対象外</dt><dd>−${fmtHM(S.excluded)}</dd>` : ''}
@@ -989,10 +1128,10 @@ function renderAtt() {
   // 上限
   const capIssues = state.issues.filter(i => i.meta.assignee === state.worker && (i.meta.capHours || i.meta.fixedFee) && i.status !== 'published');
   $('#capList').innerHTML = capIssues.length ? capIssues.map(i => {
-    const u = S.used[i.number] || 0;
-    if (i.meta.fixedFee) return `<div><div style="display:flex;justify-content:space-between;gap:8px"><span>#${i.number} ${esc(i.title)}</span><span class="note">固定額 ${yen(i.meta.fixedFee)}円</span></div><div class="note">稼働 ${fmtShort(u)}（記録のみ）</div></div>`;
+    const u = S.used[i.no] || 0;
+    if (i.meta.fixedFee) return `<div><div style="display:flex;justify-content:space-between;gap:8px"><span>#${i.no} ${esc(i.title)}</span><span class="note">固定額 ${yen(i.meta.fixedFee)}円</span></div><div class="note">稼働 ${fmtShort(u)}（記録のみ）</div></div>`;
     const cap = i.meta.capHours * 60, pct = Math.min(100, u / cap * 100);
-    return `<div><div style="display:flex;justify-content:space-between;gap:8px"><span>#${i.number} ${esc(i.title)}</span><span class="note">${fmtShort(u)} / ${i.meta.capHours}:00</span></div><div class="bar ${u > cap ? 'over' : ''}"><i style="width:${pct}%"></i></div>${u > cap * .8 && u <= cap ? '<div class="note" style="color:var(--warn)">上限に近づいています。超える前に発注者へ相談してください（第6条3項）</div>' : ''}${u > cap ? '<div class="note" style="color:var(--bad)">上限を超えています。超過分は承認がないと請求対象外です</div>' : ''}</div>`;
+    return `<div><div style="display:flex;justify-content:space-between;gap:8px"><span>#${i.no} ${esc(i.title)}</span><span class="note">${fmtShort(u)} / ${i.meta.capHours}:00</span></div><div class="bar ${u > cap ? 'over' : ''}"><i style="width:${pct}%"></i></div>${u > cap * .8 && u <= cap ? '<div class="note" style="color:var(--warn)">上限に近づいています。超える前に発注者へ相談してください（第6条3項）</div>' : ''}${u > cap ? '<div class="note" style="color:var(--bad)">上限を超えています。超過分は承認がないと請求対象外です</div>' : ''}</div>`;
   }).join('') : '<div class="note">上限が設定された動画はありません</div>';
 }
 
@@ -1080,7 +1219,7 @@ $('#expTable').onclick = e => {
 };
 async function switchMonth(delta) {
   const [y, m] = state.month.split('-').map(Number); state.month = ym(new Date(y, m - 1 + delta, 1));
-  if (!state.worklogs[`${state.worker}/${state.month}`]) { const r = await api.readJSON(wlPath(state.worker, state.month)); state.worklogs[`${state.worker}/${state.month}`] = { data: r.data || emptyWL(state.worker, state.month), sha: r.sha }; }
+  if (!state.worklogs[`${state.worker}/${state.month}`]) { const r = await billApi(state.worker).readJSON(wlPath(state.worker, state.month)); state.worklogs[`${state.worker}/${state.month}`] = { data: r.data || emptyWL(state.worker, state.month), sha: r.sha }; }
   resetForm(); $('#eDate').value = state.month === ym(new Date()) ? ymd(new Date()) : state.month + '-01'; $('#xDate').value = $('#eDate').value;
   renderAtt();
 }
@@ -1099,7 +1238,7 @@ function getIssuer() {
 }
 function invoiceFileName() { const m = Number(state.month.split('-')[1]); return `${m}月_${getIssuer().name}_請求書.pdf`; }
 function invoiceHTML() {
-  const S = monthSummary(), st = state.settings, iss = getIssuer(), wl = curWL();
+  const S = monthSummary(), st = termsOf(state.worker), iss = getIssuer(), wl = curWL();
   const [y, m] = state.month.split('-').map(Number);
   const issueDate = monthEnd(state.month), pay = prevBizDay(nextMonthDay(state.month, st.payDay));
   const lines = [];
@@ -1107,7 +1246,7 @@ function invoiceHTML() {
   S.fixed.forEach(f => lines.push([f.label, '1式', `${yen(f.amount)}円`, f.amount]));
   S.exps.forEach(x => lines.push([`実費：${x.desc}`, '1式', `${yen(x.amount)}円`, Number(x.amount)]));
   const rows = [...wl.entries].sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start));
-  const issues = Object.fromEntries(state.issues.map(i => [i.number, i]));
+  const issues = Object.fromEntries(workerIssues().map(i => [i.no, i]));
   return `
   <div class="pdfroot">
     <h1>請求書</h1>
@@ -1181,38 +1320,39 @@ async function makePdf(mode) {
 $('#btnPdf').onclick = e => guarded(e.currentTarget, async () => { await makePdf('save'); toast(`${invoiceFileName()} を出力しました`); });
 $('#btnPdfSave').onclick = e => guarded(e.currentTarget, async () => {
   const uri = await makePdf('uri'); const b64 = uri.split(',')[1];
-  const path = `${DATA}invoices/${state.month}/${invoiceFileName()}`;
-  const sha = await api.getSha(path);
-  await api.writeB64(path, b64, sha, `${invoiceFileName()} を保存（${me().name}）`);
+  const path = invPath(state.worker, state.month, invoiceFileName()), B = billApi(state.worker);
+  const sha = await B.getSha(path);
+  await B.writeB64(path, b64, sha, `${invoiceFileName()} を保存（${me().name}）`);
   if (curWL().status === 'draft') await mutateWL(d => { d.status = 'submitted'; d.submittedAt = new Date().toISOString(); d.history.push({ at: d.submittedAt, by: me().id, act: 'submit' }); }, `${state.month} 稼働報告を提出`);
-  toast(api.demo ? '保存しました（デモ：ブラウザ内）' : `GitHubの ${path} に保存しました`); renderAtt();
+  toast(B.demo ? '保存しました（デモ：ブラウザ内）' : `GitHubの ${ws.mode === 'org' ? SEIKYU + state.worker + '/' : ''}${path} に保存しました`); renderAtt();
 });
 
 /* =========================================================
    動画納品管理 UI
    ========================================================= */
-async function loadIssues() { state.issues = (await api.listIssues()).map(parseIssue); }
+async function loadIssues() { state.issues = hub ? (await hub.listIssues()).map(parseIssue) : []; }
+const workerIssues = () => state.issues.filter(i => i.meta.assignee === state.worker);
 function cardBadges(i) {
-  const out = [], now = new Date(), m = i.meta;
+  const out = [], now = new Date(), m = i.meta, T = termsOf(m.assignee);
   if (m.due && ['ordered', 'editing', 'revising'].includes(i.status)) {
     const d = daysBetween(new Date(ymd(now)), parseDate(m.due));
     out.push(`<span class="chip ${d < 0 ? 'bad' : d <= 2 ? 'warn' : ''}">納期 ${fmtJP(m.due)}${d < 0 ? `（${-d}日超過）` : d === 0 ? '（今日）' : `（あと${d}日）`}</span>`);
   }
   if (i.status === 'review' && m.deliveries.length) {
-    const lim = new Date(m.deliveries.at(-1).at); lim.setDate(lim.getDate() + state.settings.inspectionDays);
+    const lim = new Date(m.deliveries.at(-1).at); lim.setDate(lim.getDate() + T.inspectionDays);
     const d = daysBetween(now, lim);
     out.push(`<span class="chip ${d < 0 ? 'bad' : d <= 2 ? 'warn' : 'aqua'}">${d < 0 ? '検収期限切れ（みなし合格）' : `検収期限 ${fmtJP(lim)}（あと${d}日）`}</span>`);
   }
   const free = m.revisions.filter(r => !r.paid).length;
-  if (m.revisions.length) out.push(`<span class="chip ${free >= state.settings.freeRevisions ? 'warn' : ''}">無償修正 ${free}/${state.settings.freeRevisions}</span>`);
-  if (m.capHours) { const u = computeUsed()[i.number] || 0; out.push(`<span class="chip ${u > m.capHours * 60 ? 'bad' : ''}">稼働 ${fmtShort(u)}/${m.capHours}h</span>`); }
-  if (m.fixedFee) out.push(`<span class="chip">固定 ${yen(m.fixedFee)}円</span>`);
+  if (m.revisions.length) out.push(`<span class="chip ${free >= T.freeRevisions ? 'warn' : ''}">無償修正 ${free}/${T.freeRevisions}</span>`);
+  if (m.capHours && canSeeBilling(m.assignee)) { const u = computeUsed()[`${m.assignee}/${i.no}`] || 0; out.push(`<span class="chip ${u > m.capHours * 60 ? 'bad' : ''}">稼働 ${fmtShort(u)}/${m.capHours}h</span>`); }
+  if (m.fixedFee && canSeeBilling(m.assignee)) out.push(`<span class="chip">固定 ${yen(m.fixedFee)}円</span>`);
   if (m.assignee) out.push(`<span class="chip">${esc(memberName(m.assignee))}</span>`);
   return out.join('');
 }
 function computeUsed() {
   const used = {};
-  for (const v of Object.values(state.worklogs)) for (const e of v.data.entries) if (e.issue && !e.free) used[e.issue] = (used[e.issue] || 0) + e.minutes;
+  for (const [k, v] of Object.entries(state.worklogs)) { const w = k.split('/')[0]; for (const e of v.data.entries) if (e.issue && !e.free) used[`${w}/${e.issue}`] = (used[`${w}/${e.issue}`] || 0) + e.minutes; }
   return used;
 }
 function renderVid() {
@@ -1223,16 +1363,16 @@ function renderVid() {
     const list = state.issues.filter(i => i.status === s.key).sort((a, b) => (a.meta.due || '9').localeCompare(b.meta.due || '9'));
     return `<div class="col"><h3><span>${s.label}</span><span>${list.length}</span></h3>${list.map(i => `
       <div class="vcard" data-n="${i.number}">
-        <div class="no">#${i.number}${i.meta.planId ? `　企画${esc(i.meta.planId)}` : ''}${i.meta.series ? `　${esc(i.meta.series)}` : ''}</div>
+        <div class="no">#${i.no}${i.meta.planId ? `　企画${esc(i.meta.planId)}` : ''}${i.meta.series ? `　${esc(i.meta.series)}` : ''}</div>
         <div class="ttl">${esc(i.title)}</div>
         <div class="meta">${cardBadges(i)}</div>
       </div>`).join('') || '<div class="note" style="padding:6px">—</div>'}</div>`;
   }).join('');
-  const u = api.repoUrl();
-  $('#repoLink').innerHTML = u ? `GitHub：<a href="${u}/issues?q=label%3A${encodeURIComponent(BASE_LABEL)}" target="_blank" rel="noopener">${esc(state.cfg.owner)}/${esc(state.cfg.repo)}</a>` : '';
+  const links = hub ? hub.repoLinks() : [];
+  $('#repoLink').innerHTML = links.length ? 'GitHub：' + links.map(l => `<a href="${l.url}/issues?q=label%3A${encodeURIComponent(BASE_LABEL)}" target="_blank" rel="noopener">${esc(l.name)}</a>`).join('　') : '';
   $('#btnNewVideo').classList.toggle('hide', !isOwner());
 }
-$('#kanban').onclick = e => { const c = e.target.closest('.vcard'); if (c) openDetail(Number(c.dataset.n)); };
+$('#kanban').onclick = e => { const c = e.target.closest('.vcard'); if (c) openDetail(c.dataset.n); };
 $('#hidePub').onchange = renderVid;
 $('#btnReload').onclick = e => guarded(e.currentTarget, async () => { await loadIssues(); renderVid(); toast('最新の状態にしました'); });
 
@@ -1274,7 +1414,7 @@ function fillPlanSelect() {
   const cur = sel.value;
   sel.innerHTML = `<option value="">（企画を選ぶ）</option>` + list.map(pl => {
     const o = ordered.get(pl.id);
-    return `<option value="${esc(pl.id)}" ${o ? 'disabled' : ''} ${pl.id === cur ? 'selected' : ''}>${esc(pl.id)} ${esc(pl.title)}（${esc(pl.status)}${o ? `・発注済 #${o.number}` : ''}）</option>`;
+    return `<option value="${esc(pl.id)}" ${o ? 'disabled' : ''} ${pl.id === cur ? 'selected' : ''}>${esc(pl.id)} ${esc(pl.title)}（${esc(pl.status)}${o ? `・発注済 #${o.no}` : ''}）</option>`;
   }).join('') + `<option value="__none">企画を選ばずに入力する</option>`;
   if (!list.length) $('#vPlanInfo').textContent = '承認済・撮影・編集の企画がありません。下のチェックを入れると全部の企画から選べます。';
 }
@@ -1293,7 +1433,7 @@ async function applyPlan(id) {
   $('#vSpec').value = specFromPlan(fm, text);
   if (fm.edit_target_min && !$('#vCap').value) $('#vCap').value = Math.ceil(Number(fm.edit_target_min) / 30) / 2;
   const planUrl = api.fileUrl('videos/' + pl.file), scriptUrl = pl.script ? api.fileUrl(pl.script) : '';
-  state.planPick = { planId: pl.id, planTitle: fm.title || pl.title, planFile: pl.file, planUrl: planUrl || '', scriptUrl: scriptUrl || '' };
+  state.planPick = { planId: pl.id, planTitle: fm.title || pl.title, planFile: pl.file, planUrl: planUrl || '', scriptUrl: ws.mode === 'org' ? '' : (scriptUrl || ''), scriptPath: pl.script || '' };
   info.innerHTML = `企画ファイルから入力しました（状態：${esc(pl.status)}${pl.publish ? `／公開予定 ${esc(pl.publish)}` : ''}）。` +
     `${planUrl ? ` <a href="${planUrl}" target="_blank" rel="noopener">企画を開く</a>` : ''}${scriptUrl ? ` ／ <a href="${scriptUrl}" target="_blank" rel="noopener">台本PDF</a>` : '（台本PDFはまだありません）'}` +
     `${fm.edit_target_min ? `<br>上限稼働時間は編集時間の目標（${esc(fm.edit_target_min)}分）から入れています。必要なら変えてください。` : ''}`;
@@ -1312,31 +1452,36 @@ function bindVideoForm(i) {
     if (!i) {
       if (state.planPick && state.issues.some(x => x.meta.planId === state.planPick.planId)) return toast('この企画はすでに発注済みです', true);
       const meta = { ...patch, ...(state.planPick || {}), deliveries: [], revisions: [], publishedUrl: '', orderedAt: new Date().toISOString(), orderedBy: me().id };
-      const gh = await api.createIssue({ title, body: buildBody(meta), labels: [BASE_LABEL, statusLabel('ordered')] });
-      await api.addComment(gh.number, `📝 **発注**（${me().name}）\n納期：${meta.due || '未定'}　上限稼働：${meta.capHours ? meta.capHours + '時間' : 'なし'}${meta.fixedFee ? `　固定額：${yen(meta.fixedFee)}円` : ''}\n担当の方は内容を確認し「承諾して着手」を押してください（2営業日以内）。`);
+      const gh = await hub.createIssue({ title, body: buildBody(meta), labels: [BASE_LABEL, statusLabel('ordered')] }, meta.assignee);
+      const key = `${gh.__repo}/${gh.number}`;
+      if (ws.mode === 'org' && meta.scriptPath) {
+        try { const url = await sendScript(key, meta.scriptPath); await mutateIssue(key, m => { m.scriptUrl = url; }); }
+        catch (err) { toast(`台本PDFを添付できませんでした：${err.message}`, true); }
+      }
+      await hub.addComment(key, `📝 **発注**（${me().name}）\n納期：${meta.due || '未定'}　上限稼働：${meta.capHours ? meta.capHours + '時間' : 'なし'}${meta.fixedFee ? `　固定額：${yen(meta.fixedFee)}円` : ''}\n担当の方は内容を確認し「承諾して着手」を押してください（2営業日以内）。`);
       toast('発注しました');
     } else {
       await mutateIssue(i.number, (meta) => Object.assign(meta, patch), { title });
-      await api.addComment(i.number, `✏️ **発注内容を変更**（${me().name}）`);
+      await hub.addComment(i.number, `✏️ **発注内容を変更**（${me().name}）`);
       toast('保存しました');
     }
     await loadIssues(); renderVid(); closeModal();
   });
 }
 async function mutateIssue(n, fn, extra = {}) {
-  const cur = parseIssue(await api.getIssue(n));
+  const cur = parseIssue(await hub.getIssue(n));
   const meta = cur.meta; fn(meta, cur);
   const st = extra.status || cur.status;
   const labels = cur.labels.filter(l => !l.startsWith('編集:')).concat(statusLabel(st));
   if (!labels.includes(BASE_LABEL)) labels.push(BASE_LABEL);
-  await api.updateIssue(n, { body: buildBody(meta), labels, ...(extra.title ? { title: extra.title } : {}), ...(extra.state ? { state: extra.state } : {}) });
+  await hub.updateIssue(n, { body: buildBody(meta), labels, ...(extra.title ? { title: extra.title } : {}), ...(extra.state ? { state: extra.state } : {}) });
 }
 
 async function openDetail(n) {
   const i = state.issues.find(x => x.number === n); if (!i) return;
   openModal(`<div class="note">読み込み中…</div>`);
   let comments = [];
-  try { comments = await api.listComments(n); } catch (e) { toast(e.message, true); }
+  try { comments = await hub.listComments(n); } catch (e) { toast(e.message, true); }
   const m = i.meta, role = me().role, mine = m.assignee === me().id || role === 'owner';
   const free = m.revisions.filter(r => !r.paid).length;
   const acts = [];
@@ -1346,24 +1491,25 @@ async function openDetail(n) {
   if (i.status === 'review' && role === 'owner') acts.push(`<button class="btn pri" data-act="pass">検収合格</button>`);
   if (i.status === 'accepted' && role === 'owner') acts.push(`<button class="btn dark" data-act="publish">公開済にする</button>`);
   if (role === 'owner' && i.status !== 'published') acts.push(`<button class="btn" data-act="edit">発注内容を編集</button>`);
-  const ghu = api.issueUrl(n);
-  const used = computeUsed()[n] || 0;
+  if (role === 'owner' && ws.mode === 'org' && m.planId && i.status !== 'published') acts.push(`<button class="btn" data-act="script">台本PDFを${m.scriptUrl ? '送り直す' : '添付する'}</button>`);
+  const ghu = hub.issueUrl(n);
+  const used = computeUsed()[`${m.assignee}/${i.no}`] || 0, T = termsOf(m.assignee);
   openModal(`
-    <div class="head"><div><div class="note">#${n}${m.planId ? `　企画${esc(m.planId)}` : ''}${m.series ? `　${esc(m.series)}` : ''}　<span class="chip aqua">${ST[i.status].label}</span></div><h2>${esc(i.title)}</h2></div><span class="sp"></span><button class="btn sm" data-close>閉じる</button></div>
+    <div class="head"><div><div class="note">#${i.no}${m.planId ? `　企画${esc(m.planId)}` : ''}${m.series ? `　${esc(m.series)}` : ''}　<span class="chip aqua">${ST[i.status].label}</span></div><h2>${esc(i.title)}</h2></div><span class="sp"></span><button class="btn sm" data-close>閉じる</button></div>
     <div class="meta" style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px">${cardBadges(i)}</div>
     ${acts.length ? `<div class="actions">${acts.join('')}</div>` : ''}
     <dl class="kv">
-      ${m.planUrl || m.scriptUrl ? `<dt>企画・台本</dt><dd>${m.planUrl ? `<a href="${m.planUrl}" target="_blank" rel="noopener">企画ファイル</a>` : ''}${m.scriptUrl ? `　<a href="${m.scriptUrl}" target="_blank" rel="noopener">台本PDF</a>` : ''}</dd>` : ''}
+      ${(m.planUrl && canSeePlans()) || m.scriptUrl ? `<dt>企画・台本</dt><dd>${m.planUrl && canSeePlans() ? `<a href="${m.planUrl}" target="_blank" rel="noopener">企画ファイル</a>` : ''}${m.scriptUrl ? `　<a href="${m.scriptUrl}" target="_blank" rel="noopener">台本PDF</a>` : ''}</dd>` : ''}
       <dt>仕様・指示</dt><dd style="white-space:pre-wrap">${linkify(m.spec || '—')}</dd>
       <dt>尺の目安</dt><dd>${esc(m.length || '—')}</dd>
       <dt>納期</dt><dd>${esc(m.due || '—')}</dd>
       <dt>担当</dt><dd>${esc(memberName(m.assignee))}</dd>
-      <dt>報酬</dt><dd>${m.fixedFee ? `固定額 ${yen(m.fixedFee)}円（税別）` : `時間単価${m.capHours ? `（上限 ${m.capHours}時間／現在 ${fmtShort(used)}）` : ''}`}</dd>
+      ${canSeeBilling(m.assignee) ? `<dt>報酬</dt><dd>${m.fixedFee ? `固定額 ${yen(m.fixedFee)}円（税別）` : `時間単価${m.capHours ? `（上限 ${m.capHours}時間／現在 ${fmtShort(used)}）` : ''}`}</dd>` : ''}
       <dt>撮影素材</dt><dd>${m.rawUrl ? linkify(m.rawUrl) : '—'}</dd>
       <dt>納品物</dt><dd>${m.deliveries.length ? m.deliveries.map((d, k) => `v${k + 1}（${fmtJP(d.at)}）${linkify(d.url)}`).join('<br>') : '—'}</dd>
-      <dt>修正依頼</dt><dd>${m.revisions.length ? `${m.revisions.length}回（無償 ${free}/${state.settings.freeRevisions}${m.revisions.some(r => r.paid) ? '・有償あり' : ''}）` : 'なし'}</dd>
+      <dt>修正依頼</dt><dd>${m.revisions.length ? `${m.revisions.length}回（無償 ${free}/${T.freeRevisions}${m.revisions.some(r => r.paid) ? '・有償あり' : ''}）` : 'なし'}</dd>
       ${m.publishedUrl ? `<dt>公開URL</dt><dd>${linkify(m.publishedUrl)}</dd>` : ''}
-      ${ghu ? `<dt>GitHub</dt><dd><a href="${ghu}" target="_blank" rel="noopener">Issue #${n} を開く</a></dd>` : ''}
+      ${ghu ? `<dt>GitHub</dt><dd><a href="${ghu}" target="_blank" rel="noopener">Issue #${i.no} を開く</a></dd>` : ''}
     </dl>
     <div class="sec-title">やりとり</div>
     <div class="timeline">${comments.length ? comments.map(c => `<div class="tl"><div class="by">${esc(c.user?.login || '')}・${new Date(c.created_at).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</div><div class="body">${linkify(c.body)}</div></div>`).join('') : '<div class="note">まだやりとりはありません</div>'}</div>
@@ -1371,7 +1517,7 @@ async function openDetail(n) {
     <div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="btn dark" id="cSend">送信</button></div>
   `);
   $$('[data-close]', $('#sheet')).forEach(b => b.onclick = closeModal);
-  $('#cSend').onclick = e => guarded(e.currentTarget, async () => { const t = $('#cBody').value.trim(); if (!t) return; await api.addComment(n, `💬 **${me().name}**\n${t}`); openDetail(n); });
+  $('#cSend').onclick = e => guarded(e.currentTarget, async () => { const t = $('#cBody').value.trim(); if (!t) return; await hub.addComment(n, `💬 **${me().name}**\n${t}`); openDetail(n); });
   $$('[data-act]', $('#sheet')).forEach(b => b.onclick = () => doAction(i, b.dataset.act, b));
 }
 function subForm(title, inner, onOk, okLabel = '確定') {
@@ -1382,11 +1528,19 @@ function subForm(title, inner, onOk, okLabel = '確定') {
 }
 async function finish(n, msg) { await loadIssues(); renderVid(); if (state.tab === 'att') renderAtt(); toast(msg); openDetail(n); }
 function doAction(i, act, btn) {
-  const n = i.number, who = me().name, S = state.settings;
+  const n = i.number, who = me().name, S = termsOf(i.meta.assignee);
   if (act === 'edit') { openModal(videoForm(i)); bindVideoForm(i); return; }
+  if (act === 'script') return guarded(btn, async () => {
+    const pl = (await loadPlans(true)).find(p => p.id === i.meta.planId);
+    if (!pl?.script) return toast(`企画${i.meta.planId}の台本PDF（daihon/pdf/）がまだありません`, true);
+    const url = await sendScript(n, pl.script);
+    await mutateIssue(n, m => { m.scriptUrl = url; m.scriptPath = pl.script; });
+    await hub.addComment(n, `📎 **台本PDFを添付**（${who}）\n${url}`);
+    await finish(n, '台本PDFを添付しました');
+  });
   if (act === 'accept') return guarded(btn, async () => {
     await mutateIssue(n, m => { m.acceptedOrderAt = new Date().toISOString(); }, { status: 'editing' });
-    await api.addComment(n, `🤝 **承諾・着手**（${who}）\n個別契約が成立しました。`);
+    await hub.addComment(n, `🤝 **承諾・着手**（${who}）\n個別契約が成立しました。`);
     await finish(n, '着手しました');
   });
   if (act === 'deliver') {
@@ -1396,7 +1550,7 @@ function doAction(i, act, btn) {
       let v;
       await mutateIssue(n, m => { m.deliveries.push({ at: new Date().toISOString(), by: me().id, url, note, ai, materials: mat }); v = m.deliveries.length; }, { status: 'review' });
       const lim = new Date(); lim.setDate(lim.getDate() + S.inspectionDays);
-      await api.addComment(n, `📦 **納品 v${v}**（${who}）\n${url}${note ? '\n' + note : ''}${mat ? `\n使用素材（第8条5項）：${mat}` : ''}${ai ? `\n生成AIの利用（第9条2項）：${ai}` : ''}\n検収期限：${fmtJPFull(lim)}`);
+      await hub.addComment(n, `📦 **納品 v${v}**（${who}）\n${url}${note ? '\n' + note : ''}${mat ? `\n使用素材（第8条5項）：${mat}` : ''}${ai ? `\n生成AIの利用（第9条2項）：${ai}` : ''}\n検収期限：${fmtJPFull(lim)}`);
       await finish(n, '納品しました');
     }; f.n = n;
     subForm('納品する', `
@@ -1414,7 +1568,7 @@ function doAction(i, act, btn) {
       const note = $('#rNote').value.trim(); if (!note) return toast('修正内容を入力してください', true);
       const paid = $$('input[name=rType]').find(r => r.checked).value === 'paid';
       await mutateIssue(n, m => { m.revisions.push({ at: new Date().toISOString(), by: me().id, note, paid }); }, { status: 'revising' });
-      await api.addComment(n, `🔁 **修正依頼**（${who}・${paid ? '有償：稼働時間に算入' : '無償修正'}）\n${note}`);
+      await hub.addComment(n, `🔁 **修正依頼**（${who}・${paid ? '有償：稼働時間に算入' : '無償修正'}）\n${note}`);
       await finish(n, '修正を依頼しました');
     }; f.n = n;
     subForm('修正を依頼', `
@@ -1430,14 +1584,14 @@ function doAction(i, act, btn) {
   if (act === 'pass') return guarded(btn, async () => {
     if (!confirm('検収合格にしますか？（固定額案件は今月の請求に計上されます）')) return;
     await mutateIssue(n, m => { m.acceptedAt = new Date().toISOString(); }, { status: 'accepted' });
-    await api.addComment(n, `✅ **検収合格**（${who}）`);
+    await hub.addComment(n, `✅ **検収合格**（${who}）`);
     await finish(n, '検収合格にしました');
   });
   if (act === 'publish') {
     const f = async () => {
       const url = $('#pUrl').value.trim();
       await mutateIssue(n, m => { m.publishedUrl = url; m.publishedAt = new Date().toISOString(); }, { status: 'published', state: 'closed' });
-      await api.addComment(n, `🎉 **公開**（${who}）${url ? '\n' + url : ''}`);
+      await hub.addComment(n, `🎉 **公開**（${who}）${url ? '\n' + url : ''}`);
       await finish(n, '公開済にしました');
     }; f.n = n;
     subForm('公開済にする', `<div class="f"><label>YouTubeのURL（任意）</label><input id="pUrl" placeholder="https://youtu.be/…"></div>`, f, '公開済にする');
@@ -1449,19 +1603,26 @@ function doAction(i, act, btn) {
    ========================================================= */
 $('#btnSettings').onclick = openSettings; $('#btnGoSettings').onclick = openSettings;
 function openSettings() {
-  const c = state.cfg, S = state.settings, iss = getIssuer();
+  const c = state.cfg, S = state.settings, iss = getIssuer(), org = ws.mode === 'org', chs = channels();
+  const T = termsOf(state.worker);
   openModal(`
     <div class="head"><h2>設定</h2><span class="sp"></span><button class="btn sm" data-close>閉じる</button></div>
-    <div class="sec-title">あなたは誰ですか</div>
-    <div class="f"><select id="sMe">${S.members.map(m => `<option value="${m.id}" ${m.id === c.me ? 'selected' : ''}>${esc(m.name)}（${ROLE_LABEL[m.role]}）</option>`).join('')}</select></div>
+    ${org ? `<div class="sec-title">あなた</div>
+    <div class="note">GitHub：<b>${esc(ws.login)}</b>　役割：<b>${esc(ROLE_LABEL[me().role])}</b>（${esc(me().name)}）<br>役割と見られる画面は、GitHub で見られるリポジトリから自動で決まります。</div>
+    <input type="hidden" id="sMe" value="${esc(c.me)}">`
+    : `<div class="sec-title">あなたは誰ですか</div>
+    <div class="f"><select id="sMe">${S.members.map(m => `<option value="${m.id}" ${m.id === c.me ? 'selected' : ''}>${esc(m.name)}（${ROLE_LABEL[m.role]}）</option>`).join('')}</select></div>`}
 
-    <div class="sec-title">GitHub連携</div>
+    <div class="sec-title">チャンネル（GitHub の接続先）</div>
+    ${chs.length > 1 ? `<div class="f"><label for="sChan">保存してある接続先</label><select id="sChan">${chs.map(x => `<option value="${esc(chanKey(x))}" ${chanKey(x) === chanKey(c) ? 'selected' : ''}>${esc(x.label || x.owner)}（${esc(x.owner)}）</option>`).join('')}<option value="__new">＋ 新しいチャンネルを追加</option></select></div>` : ''}
     <div class="fgrid">
-      <div class="f"><label>オーナー（ユーザー名 / 組織）</label><input id="sOwner" value="${esc(c.owner)}"></div>
-      <div class="f"><label>リポジトリ名</label><input id="sRepo" value="${esc(c.repo)}"></div>
+      <div class="f"><label>Organization（またはユーザー名）</label><input id="sOwner" value="${esc(c.owner)}" placeholder="fuyantech"></div>
+      <div class="f"><label>企画リポジトリ名</label><input id="sRepo" value="${esc(c.repo)}" placeholder="kikaku"></div>
+      <div class="f"><label>表示名（切り替えに使う名前）</label><input id="sLabel" value="${esc(c.label || '')}" placeholder="Fuyan Tech"></div>
       <div class="f"><label>ブランチ</label><input id="sBranch" value="${esc(c.branch || 'main')}"></div>
-      <div class="f"><label>Personal Access Token（このブラウザにだけ保存）</label><input id="sToken" type="password" value="${esc(c.token)}" placeholder="github_pat_…"></div>
+      <div class="f full"><label>Personal Access Token（このブラウザにだけ保存）</label><input id="sToken" type="password" value="${esc(c.token)}" placeholder="github_pat_…"></div>
     </div>
+    <div class="note">企画リポジトリを見る権限がない方（編集担当）も、そのままの名前で構いません。</div>
     <div class="row" style="margin-top:8px"><button class="btn" id="sTest">接続テスト</button><button class="btn" id="sLabels">ラベルを確認</button><span class="note" id="sRes"></span></div>
     <div class="f" style="margin-top:12px"><label for="sLink">GitHub のリンクを開くブラウザ（この端末だけの設定）</label>
       <select id="sLink" ${IS_IOS ? '' : 'disabled'}>
@@ -1484,39 +1645,66 @@ function openSettings() {
     </div>
 
     <div class="${isOwner() ? '' : 'hide'}">
-      <div class="sec-title">契約条件（全員で共有・発注者のみ変更）</div>
+      <div class="sec-title">${org ? 'チャンネルと契約条件（発注者のみ変更）' : '契約条件（全員で共有・発注者のみ変更）'}</div>
       <div class="fgrid">
-        <div class="f"><label>プロジェクト名</label><input id="kProj" value="${esc(S.project)}"></div>
-        <div class="f"><label>請求先（甲）</label><input id="kClient" value="${esc(S.client)}"></div>
-        <div class="f"><label>時間単価（円・税別）</label><input type="number" id="kRate" value="${S.rate}"></div>
-        <div class="f"><label>無償修正の回数</label><input type="number" id="kFree" value="${S.freeRevisions}"></div>
-        <div class="f full"><label>メンバー（id:名前:役割 を1行ずつ／役割は owner・editor・partner）</label><textarea id="kMembers">${S.members.map(m => `${m.id}:${m.name}:${m.role}`).join('\n')}</textarea></div>
+        <div class="f"><label>${org ? 'チャンネル名' : 'プロジェクト名'}</label><input id="kProj" value="${esc(org ? (ws.channel?.name || S.project) : S.project)}"></div>
+        <div class="f"><label>請求先（甲）</label><input id="kClient" value="${esc(T.client)}"></div>
+        <div class="f"><label>時間単価（円・税別）${org ? `：${esc(memberName(state.worker))}さん` : ''}</label><input type="number" id="kRate" value="${T.rate}"></div>
+        <div class="f"><label>無償修正の回数${org ? `：${esc(memberName(state.worker))}さん` : ''}</label><input type="number" id="kFree" value="${T.freeRevisions}"></div>
+        <div class="f full"><label>${org ? 'オーナー・パートナー（id:名前:役割:GitHubユーザー名 を1行ずつ／役割は owner・partner）' : 'メンバー（id:名前:役割:GitHubユーザー名 を1行ずつ／役割は owner・editor・partner）'}</label><textarea id="kMembers">${S.members.filter(m => !org || m.role !== 'editor').map(m => `${m.id}:${m.name}:${m.role}${m.gh ? ':' + m.gh : ''}`).join('\n')}</textarea>
+        ${org ? '<div class="note">編集担当の名前と単価は、それぞれの hensyu-*／seikyu-* リポジトリに保存されます。単価と無償修正の回数は「稼働・請求」で選んでいる受託者のものです。</div>' : ''}</div>
       </div>
     </div>
     <div style="display:flex;justify-content:space-between;gap:8px;margin-top:18px;flex-wrap:wrap">
-      <button class="btn danger" id="sResetDemo">${api.demo ? 'デモデータを初期化' : 'GitHub連携を解除'}</button>
+      <button class="btn danger" id="sResetDemo">${api.demo ? 'デモデータを初期化' : 'このチャンネルの接続を外す'}</button>
       <button class="btn pri" id="sSave">保存して再読み込み</button>
     </div>`);
   $$('[data-close]', $('#sheet')).forEach(b => b.onclick = closeModal);
-  const readCfg = () => ({ owner: $('#sOwner').value.trim(), repo: $('#sRepo').value.trim(), branch: $('#sBranch').value.trim() || 'main', token: $('#sToken').value.trim(), me: $('#sMe').value });
+  const readCfg = () => ({ owner: $('#sOwner').value.trim(), repo: $('#sRepo').value.trim() || 'kikaku', label: $('#sLabel').value.trim(), branch: $('#sBranch').value.trim() || 'main', token: $('#sToken').value.trim(), me: $('#sMe').value });
+  if ($('#sChan')) $('#sChan').onchange = e => {
+    const x = chs.find(y => chanKey(y) === e.target.value) || { owner: '', repo: 'kikaku', label: '', branch: 'main', token: '' };
+    $('#sOwner').value = x.owner; $('#sRepo').value = x.repo; $('#sLabel').value = x.label || ''; $('#sBranch').value = x.branch || 'main'; $('#sToken').value = x.token || '';
+  };
   $('#sTest').onclick = e => guarded(e.currentTarget, async () => {
-    const b = new GitHubBackend(readCfg()); const u = await b.whoami(); const r = await b.repoInfo();
-    $('#sRes').textContent = `OK：${u.login} として ${r.full_name}（${r.private ? '非公開' : '公開'}）に接続できました`;
-    if (!r.private) toast('リポジトリが公開になっています。稼働・請求データが誰でも見られるため、非公開を推奨します', true);
+    const cfg = readCfg(), b = new GitHubBackend(cfg); const u = await b.whoami();
+    const repos = await b.listRepos(), names = repos.map(r => r.name);
+    const k = repos.find(r => r.name === cfg.repo), h = names.filter(n => n.startsWith(HENSYU)), sk = names.filter(n => n.startsWith(SEIKYU));
+    if (!h.length && !sk.length) {
+      const r = await b.repoInfo();
+      $('#sRes').textContent = `OK：${u.login} として ${r.full_name}（${r.private ? '非公開' : '公開'}）に接続できました（1リポジトリ構成）`;
+      if (!r.private) toast('リポジトリが公開になっています。稼働・請求データが誰でも見られるため、非公開を推奨します', true);
+      return;
+    }
+    if (repos.some(r => !r.private && r.name !== 'seisakushitsu')) toast('公開になっているリポジトリがあります：' + repos.filter(r => !r.private && r.name !== 'seisakushitsu').map(r => r.name).join('、'), true);
+    const role = k ? (k.permissions.admin ? 'owner' : 'partner') : 'editor';
+    $('#sRes').innerHTML = `OK：${esc(u.login)} として ${esc(cfg.owner)} に接続できました。役割は<b>${ROLE_LABEL[role]}</b>です。<br>見られるリポジトリ：${esc([k?.name, ...h, ...sk].filter(Boolean).join('、'))}`;
   });
-  $('#sLabels').onclick = e => guarded(e.currentTarget, async () => { await new GitHubBackend(readCfg()).ensureLabels(); $('#sRes').textContent = 'ラベルを準備しました'; });
+  $('#sLabels').onclick = e => guarded(e.currentTarget, async () => {
+    const cfg = readCfg(), b = new GitHubBackend(cfg);
+    const h = (await b.listRepos()).map(r => r.name).filter(n => n.startsWith(HENSYU));
+    if (h.length) for (const n of h) await new GitHubBackend({ ...cfg, repo: n }).ensureLabels(); else await b.ensureLabels();
+    $('#sRes').textContent = `ラベルを準備しました${h.length ? `（${h.join('、')}）` : ''}`;
+  });
   $('#sResetDemo').onclick = () => {
     if (api.demo) { if (confirm('デモデータを消して初期状態に戻しますか？')) { LS.del('fy_demo'); location.reload(); } }
-    else if (confirm('このブラウザのGitHub連携を解除しますか？（GitHub上のデータは消えません）')) { LS.set('fy_cfg', { ...state.cfg, token: '' }); location.reload(); }
+    else if (confirm('このチャンネルの接続を、このブラウザから外しますか？（GitHub上のデータは消えません）')) { removeChannel(state.cfg); LS.del('fy_tab'); location.reload(); }
   };
   $('#sSave').onclick = e => guarded(e.currentTarget, async () => {
-    const cfg = readCfg(); LS.set('fy_cfg', cfg);
+    const cfg = readCfg();
+    if (cfg.token && cfg.owner) saveChannel(cfg); else LS.set('fy_cfg', cfg);
+    if (chanKey(cfg) !== chanKey(state.cfg)) { LS.del('fy_tab'); location.reload(); return; }
     if (IS_IOS) LS.set('fy_link', $('#sLink').value);
     const all = LS.get('fy_issuer', {});
     if (me().role === 'editor') all[me().id] = { name: $('#iName').value.trim() || memberName(me().id), email: $('#iMail').value.trim(), address: $('#iAddr').value.trim(), bank: $('#iBank').value, regNo: $('#iReg').value.trim(), withholding: $('#iWh').checked };
     LS.set('fy_issuer', all);
-    if (isOwner()) {
-      const members = $('#kMembers').value.split('\n').map(l => l.trim()).filter(Boolean).map(l => { const [id, name, role] = l.split(':').map(s => s.trim()); const old = state.settings.members.find(m => m.id === id) || {}; return { ...old, id, name: name || id, role: ['owner', 'editor', 'partner'].includes(role) ? role : 'partner' }; });
+    if (isOwner() && org) {
+      const members = $('#kMembers').value.split('\n').map(l => l.trim()).filter(Boolean).map(l => { const [id, name, role, gh] = l.split(':').map(s => s.trim()); return { id, name: name || id, role: role === 'owner' ? 'owner' : 'partner', gh: gh || '' }; });
+      const upd = async (b, path, patch, msg) => { const r = await b.readJSON(path); const next = { ...(r.data || {}), ...patch }; if (JSON.stringify(next) !== JSON.stringify(r.data)) await b.writeB64(path, b64enc(JSON.stringify(next, null, 2)), r.sha, `${msg}（${me().name}）`); };
+      await upd(api, CHANNEL_FILE, { name: $('#kProj').value.trim(), client: $('#kClient').value.trim(), members }, 'チャンネル設定を更新');
+      if (ws.seikyu[state.worker]) await upd(ws.seikyu[state.worker], TERMS_FILE, { rate: Number($('#kRate').value) || T.rate, client: $('#kClient').value.trim() }, '契約条件を更新');
+      if (ws.hensyu[state.worker]) await upd(ws.hensyu[state.worker], EDITOR_FILE, { freeRevisions: Number($('#kFree').value) || 0 }, '無償修正の回数を更新');
+    } else if (isOwner()) {
+      const members = $('#kMembers').value.split('\n').map(l => l.trim()).filter(Boolean).map(l => { const [id, name, role, gh] = l.split(':').map(s => s.trim()); const old = state.settings.members.find(m => m.id === id) || {}; return { ...old, id, name: name || id, role: ['owner', 'editor', 'partner'].includes(role) ? role : 'partner', ...(gh ? { gh } : {}) }; });
       const ns = { ...state.settings, project: $('#kProj').value.trim(), client: $('#kClient').value.trim(), rate: Number($('#kRate').value) || state.settings.rate, freeRevisions: Number($('#kFree').value) || 0, members };
       if (JSON.stringify(ns) !== JSON.stringify(state.settings)) {
         const nb = cfg.token && cfg.owner && cfg.repo ? new GitHubBackend(cfg) : api;
@@ -2127,7 +2315,7 @@ async function renderFlow() {
       ${step('企画', true, `<div class="chips"><span class="chip ${statusChip(plan.status)}">${esc(plan.status)}</span>${plan.series ? `<span class="chip">${esc(plan.series)}</span>` : ''}<span class="chip">${esc(plan.length)}</span></div><div class="row">${docBtn('videos/' + plan.file, '企画書を開く')}</div><div class="note"><code>videos/${esc(plan.file)}</code></div>`)}
       ${step('台本', !!sc, sc ? `<div class="row">${docBtn(sc, '台本を開く')}${pdf && api.fileUrl(pdf) ? `<a class="btn sm" href="${api.fileUrl(pdf)}" target="_blank" rel="noopener">PDF</a>` : ''}</div><div class="note"><code>${esc(sc)}</code></div>` : `<div class="note">まだありません（承認後に youtube-script スキルで書く）${pdf ? `。旧形式の PDF はあります` : ''}</div>`)}
       ${step('案件（タイアップ）', an.length > 0, an.length ? an.map(dir => `<div class="rv-annken"><b>${esc(dir)}</b><div class="row">${ANNKEN_MEMO_FILES.map(f => docBtn(`annken/${dir}/${f}`, f.replace('.md', ''))).join('')}${docBtn(`annken/${dir}/やりとり.md`, 'やりとり（閲覧）')}</div></div>`).join('') : '<div class="note">紐づく案件はありません</div>')}
-      ${step('編集発注', orders.length > 0, orders.length ? orders.map(o => `<div class="row"><span class="chip aqua">${esc(ST[o.status].label)}</span><span>#${o.number} ${esc(o.title)}</span>${o.meta.due ? `<span class="note">納期 ${esc(o.meta.due)}</span>` : ''}</div>`).join('') + '<div class="note">「動画納品管理」タブで詳細を見られます</div>' : '<div class="note">まだ発注していません</div>')}
+      ${step('編集発注', orders.length > 0, orders.length ? orders.map(o => `<div class="row"><span class="chip aqua">${esc(ST[o.status].label)}</span><span>#${o.no} ${esc(o.title)}</span>${o.meta.due ? `<span class="note">納期 ${esc(o.meta.due)}</span>` : ''}</div>`).join('') + '<div class="note">「動画納品管理」タブで詳細を見られます</div>' : '<div class="note">まだ発注していません</div>')}
       ${step('公開', plan.status === '公開', `<div class="note">${plan.publish ? `公開予定 ${esc(plan.publish)}` : '公開日は未定'}${plan.status === '公開' ? '（公開済）' : ''}</div>`)}
     </div>`;
   bindRvNav();
@@ -2387,7 +2575,7 @@ async function renderHome() {
     mine.filter(i => i.status === 'revising').forEach(i => add('now', `修正して再納品する：${i.title}`, '', `vid:${i.number}`, '開く'));
     mine.filter(i => i.status === 'editing').forEach(i => add('soon', `編集して納品する：${i.title}`, i.meta.due ? `納期 ${i.meta.due}` : '', `vid:${i.number}`, '開く'));
     const wl = state.worklogs[`${me().id}/${state.month}`]?.data;
-    if (wl && wl.status === 'draft') add('soon', `${Number(state.month.slice(5))}月分の稼働報告を提出する`, `期限 ${fmtJPFull(nextMonthDay(state.month, state.settings.reportDay))}`, 'att', '稼働・請求へ');
+    if (wl && wl.status === 'draft') add('soon', `${Number(state.month.slice(5))}月分の稼働報告を提出する`, `期限 ${fmtJPFull(nextMonthDay(state.month, termsOf(me().id).reportDay))}`, 'att', '稼働・請求へ');
   } else {
     if (undoable.length) undoable.forEach(x => add('now', `Claude が反映した修正を確認する：${docLabel(x.path)}`, '気に入らなければ「元に戻す」', `doc:${x.path}`, '確認する'));
     if (byStatus('review').length) byStatus('review').forEach(i => add('now', `納品された動画を検収する：${i.title}`, '7日以内', `vid:${i.number}`, '開く'));
@@ -2433,13 +2621,13 @@ function go(dest) {
   if (k === 'doc') { setTab('review', { keep: true }); openDoc(arg); return; }
   if (k === 'map') { rv.view = 'map'; setTab('review', { keep: true }); return; }
   if (k === 'review') { if (arg) rv.filter = arg; setTab('review'); return; }
-  if (k === 'vid') { setTab('vid'); if (arg) setTimeout(() => openDetail(Number(arg)), 50); return; }
+  if (k === 'vid') { setTab('vid'); if (arg) setTimeout(() => openDetail(arg), 50); return; }
   setTab(k);
 }
 function updateBadges() {
   const set = (id, n, hot) => { const b = $('#' + id); if (!b) return; b.textContent = n ? n : ''; b.classList.toggle('hot', !!hot && !!n); };
   const role = me().role;
-  if (rv.ideas) set('bd-ideas', rv.ideas.filter(i => !i.labels.includes('ネタ承認')).length);
+  if (rv.ideas && canSeePlans()) set('bd-ideas', rv.ideas.filter(i => !i.labels.includes('ネタ承認')).length);
   if (state.plans) set('bd-review', state.plans.filter(p => p.status === 'レビュー待ち').length);
   const orders = state.issues || [];
   if (role === 'editor') set('bd-vid', orders.filter(i => i.meta.assignee === me().id && ['ordered', 'revising'].includes(i.status)).length, true);
@@ -2450,7 +2638,9 @@ function updateBadges() {
 const TABS = ['home', 'ideas', 'review', 'vid', 'att'];
 function setTab(t, opts = {}) {
   if (t === 'rev') t = 'review';
-  if (!TABS.includes(t)) t = 'home';
+  const ok = allowedTabs();
+  if (!ok.includes(t)) t = ok[0] || 'none';
+  $('#tab-none').classList.toggle('hide', t !== 'none');
   state.tab = t; LS.set('fy_tab', t);
   $$('.line button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
   $('#tab-home').classList.toggle('hide', t !== 'home');
@@ -2471,13 +2661,25 @@ async function boot() {
   api = (c.token && c.owner && c.repo) ? new GitHubBackend(c) : new DemoBackend();
   $('#demoBanner').classList.toggle('hide', !api.demo);
   document.body.classList.add('loading');
+  renderChanSel();
   try {
-    const s = await api.readJSON(DATA + 'settings.json');
-    if (s.data) state.settings = { ...DEFAULT_SETTINGS, ...s.data };
-    $('#projName').textContent = state.settings.project;
+    if (!api.demo && await discover(api)) {
+      // 新方式：hensyu-* と seikyu-* を束ねる
+      if (!ws.kikaku) api = NO_PLANS;
+      hub = new OrdersHub(Object.entries(ws.hensyu).map(([id, be]) => ({ repo: HENSYU + id, be, editor: id })));
+    } else {
+      // 旧方式：企画リポジトリ1つに発注 Issue と seisaku/ がある
+      const s = await api.readJSON(DATA + 'settings.json');
+      if (s.data) state.settings = { ...DEFAULT_SETTINGS, ...s.data };
+      hub = new OrdersHub([{ repo: api.demo ? 'demo' : c.repo, be: api, editor: null }]);
+    }
+    $('#projName').textContent = ws.channel?.name || state.settings.project;
     $('#meChip').textContent = `${me().name}（${ROLE_LABEL[me().role]}）`;
-    state.worker = me().role === 'editor' ? me().id : (editors()[0]?.id || me().id);
-    await Promise.all([loadIssues(), loadWorklogs(state.worker)]);
+    const billable = editors().filter(e => ws.mode !== 'org' || ws.seikyu[e.id]);
+    state.worker = me().role === 'editor' ? me().id : (billable[0]?.id || editors()[0]?.id || me().id);
+    $$('.line button').forEach(b => b.classList.toggle('hide', !allowedTabs().includes(b.dataset.tab)));
+    $('.line-steps').classList.toggle('only-vid', !allowedTabs().includes('ideas'));
+    await Promise.all([loadIssues(), (ws.mode !== 'org' || ws.seikyu[state.worker]) ? loadWorklogs(state.worker) : null]);
   } catch (e) {
     console.error(e);
     toast(`読み込みに失敗しました：${e.message}`, true);
@@ -2487,7 +2689,7 @@ async function boot() {
   const savedTab = LS.get('fy_tab', null);
   setTab(savedTab && savedTab !== 'att' && savedTab !== 'rev' ? savedTab : (me().role === 'editor' ? (savedTab === 'att' ? 'att' : 'vid') : 'home'));
   if (!LS.get('fy_cfg_seen', false) && api.demo) { LS.set('fy_cfg_seen', true); }
-  Promise.all([loadPlans(), loadIdeas()]).then(updateBadges).catch(() => {});
+  if (canSeePlans()) Promise.all([loadPlans(), loadIdeas()]).then(updateBadges).catch(() => {});
 }
 boot();
 </script>

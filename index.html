@@ -221,6 +221,10 @@ tr.rv-blk.has-note td:first-child,tr.rv-blk.has-note th:first-child{box-shadow:i
 .rv-pipe{display:flex;flex-direction:column;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:6px 10px;min-width:0}
 .rv-arrow{color:var(--ink-3)}
 .rv-map{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px;margin-bottom:8px}
+.rv-idea{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow);flex-wrap:wrap}
+.rv-idea-main{display:flex;flex-direction:column;gap:6px;min-width:0;flex:1 1 280px}
+.rv-idea-memo{font-size:13px;color:var(--ink-2);white-space:pre-wrap;border-left:3px solid var(--line);padding-left:8px}
+.rv-idea-acts{display:flex;gap:6px;flex-wrap:wrap}
 .rv-folder{display:flex;flex-direction:column;gap:4px;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer;min-width:0}
 .rv-folder:hover{border-color:var(--aqua)}
 .rv-fname{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-weight:500;word-break:break-all}
@@ -1737,6 +1741,7 @@ function rvNav(active) {
   return `<div class="rv-nav">
     <div class="seg">
       <button data-rvnav="list" class="${active === 'list' ? 'on' : ''}">レビュー待ち</button>
+      <button data-rvnav="ideas" class="${active === 'ideas' ? 'on' : ''}">ネタ帳</button>
       <button data-rvnav="map" class="${active === 'map' ? 'on' : ''}">リポジトリの地図</button>
     </div>
     <span class="sp"></span>
@@ -1747,7 +1752,7 @@ function rvNav(active) {
 function bindRvNav() {
   $$('[data-rvnav]', rvEl()).forEach(b => b.onclick = () => { rv.view = b.dataset.rvnav; renderRev(); });
   const r = $('#rvReload'); if (r) r.onclick = e => guarded(e.currentTarget, async () => {
-    state.plans = null; rv.links = null; rv.loaded = false;
+    state.plans = null; rv.links = null; rv.loaded = false; rv.ideas = null;
     if (rv.doc) rv.doc.stale = true;
     await renderRev(true); toast('最新の状態にしました');
   });
@@ -1759,6 +1764,7 @@ async function renderRev(force) {
     if (rv.view === 'doc' && rv.doc) return await renderDoc(force);
     if (rv.view === 'flow') return await renderFlow();
     if (rv.view === 'map') return await renderMap();
+    if (rv.view === 'ideas') return await renderIdeas();
     if (rv.view === 'folder') return await renderFolder();
     return await renderList();
   } catch (e) { console.error(e); el.innerHTML = `${rvNav(rv.view)}<div class="empty">読み込めませんでした：${esc(e.message)}</div>`; bindRvNav(); }
@@ -2046,6 +2052,147 @@ async function renderFlow() {
   bindRvNav();
   $('#rvBack').onclick = () => { rv.view = rv.doc ? 'doc' : 'list'; renderRev(); };
   $$('[data-open]', el).forEach(b => b.onclick = () => openDoc(b.dataset.open));
+}
+
+
+/* ---------- ネタ帳（既存の video-idea フォームと同じ形式のネタIssue） ---------- */
+const IDEA_FIELDS = [
+  { key: 'title', label: 'タイトル案', type: 'input', req: true, ph: '全角32文字以内。具体的な名詞を1つ入れる' },
+  { key: 'level', label: '誰に向けた動画か', type: 'select', req: true, opts: ['L1 初級（前提知識ゼロ）', 'L2 中級（触ったことがある人）', 'L3 上級（経験者・実務者）'] },
+  { key: 'format', label: '見せ方', type: 'select', req: true, opts: ['F1 解説', 'F2 デモ開発', 'F3 雑談・企画'] },
+  { key: 'theme', label: 'テーマ', type: 'select', req: true, opts: ['T1 暮らし・家族', 'T2 仕事・業務', 'T3 創作・遊び', 'T4 お金・キャリア'] },
+  { key: 'series', label: 'シリーズ', type: 'input', req: true, ph: '100個企画 / 絵本 / 座学 / ガチ回 / はじめてのAI / つくり方 / チャレンジ / 体感シリーズ / 検証 / 単発' },
+  { key: 'core', label: '誰に、何を解決するか', type: 'textarea', ph: '「初心者向け」ではなく、一人だけを具体的に' },
+  { key: 'hitokoto', label: '視聴後の一言', type: 'input', ph: '見終わった直後につぶやく一言' },
+  { key: 'miseba', label: '一番の見せ場', type: 'input', ph: '1本に1つだけ' },
+  { key: 'excitement', label: 'ワクワク度', type: 'select', opts: ['3（作りたい）', '2（ふつう）', '1（一応）'] },
+  { key: 'memo', label: 'メモ', type: 'textarea', ph: '思いついたこと・きっかけ・参考リンク' }
+];
+const IDEA_NO = new Set(['_no response_', '_未入力_', 'none', '_none_', 'n/a', '-', '']);
+function parseIdea(body) {
+  const out = {};
+  for (const f of IDEA_FIELDS) {
+    const m = new RegExp(`^###\\s*${f.label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\n+([\\s\\S]*?)(?=\\n###\\s|$(?![\\s\\S]))`, 'm').exec(body || '');
+    const v = m ? m[1].replace(/<!--[\s\S]*?-->/g, '').trim() : '';
+    out[f.key] = IDEA_NO.has(v.toLowerCase()) ? '' : v;
+  }
+  return out;
+}
+function ideaBody(v, by) {
+  return `<!-- fy-idea ${JSON.stringify({ by })} -->\n\n` + IDEA_FIELDS.map(f => `### ${f.label}\n\n${(v[f.key] || '').trim() || '_No response_'}`).join('\n\n');
+}
+const ideaMissing = v => IDEA_FIELDS.filter(f => f.req && !v[f.key]).map(f => f.label);
+const ideaTitle = v => `[ネタ] ${(v.title || v.memo.split('\n')[0] || '（無題）').slice(0, 40)}`;
+async function loadIdeas(force) {
+  if (rv.ideas && !force) return rv.ideas;
+  const list = await api.listIssuesByLabel('ネタ');
+  rv.ideas = list.filter(i => i.state === 'open').map(i => {
+    const names = (i.labels || []).map(l => typeof l === 'string' ? l : l.name);
+    return { number: i.number, title: i.title, url: i.html_url, v: parseIdea(i.body), body: i.body, labels: names, at: i.created_at, by: parseMeta(i.body, 'fy-idea')?.by || i.user?.login || '', comments: i.comments || 0 };
+  }).sort((a, b) => b.at.localeCompare(a.at));
+  return rv.ideas;
+}
+async function renderIdeas() {
+  const el = rvEl();
+  if (!rv.ideas) { el.innerHTML = `${rvNav('ideas')}<div class="empty">読み込み中…</div>`; bindRvNav(); }
+  await loadIdeas();
+  const can = canReview();
+  const rough = rv.ideas.filter(i => ideaMissing(i.v).length).length;
+  el.innerHTML = `${rvNav('ideas')}
+    ${can ? `<div class="card" style="margin-bottom:14px"><h2>ネタをメモする</h2>
+      <div class="f"><label for="idMemo">思いついたこと（1行でも大丈夫）</label><textarea id="idMemo" placeholder="例：子どもの落書きを読み込んで動くゲームにする"></textarea></div>
+      <div class="f" style="margin-top:8px"><label for="idTitle">タイトル案（任意）</label><input id="idTitle"></div>
+      <div style="display:flex;justify-content:space-between;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center">
+        <span class="note">空いた項目は「ネタを膨らませて」と Claude に頼むと埋まります。</span>
+        <span style="display:flex;gap:8px"><button class="btn" id="idDetail">全部の項目で書く</button><button class="btn pri" id="idSave">メモする</button></span>
+      </div></div>` : ''}
+    <div class="rv-nav" style="margin-bottom:8px"><b>ネタ帳</b><span class="note">${rv.ideas.length}件（項目が足りないもの ${rough}件）</span></div>
+    <div class="rv-list-wrap">${rv.ideas.length ? rv.ideas.map(i => {
+      const miss = ideaMissing(i.v);
+      const code = s => (s || '').split(' ')[0];
+      return `<div class="rv-idea">
+        <div class="rv-idea-main">
+          <div class="rv-title">${esc(i.v.title || i.title.replace(/^\[ネタ\]\s*/, ''))}</div>
+          <div class="chips">
+            ${i.labels.includes('ネタ承認') ? '<span class="chip aqua">承認済み・企画ファイル作成中</span>' : miss.length ? `<span class="chip warn">未記入：${esc(miss.join('・'))}</span>` : '<span class="chip ok">承認できます</span>'}
+            ${i.v.level ? `<span class="chip">${esc(code(i.v.level))}-${esc(code(i.v.format))} / ${esc(code(i.v.theme))}</span>` : ''}
+            ${i.v.series ? `<span class="chip">${esc(i.v.series)}</span>` : ''}
+            ${i.labels.includes('要相談') ? '<span class="chip bad">要相談</span>' : ''}
+            <span class="note">#${i.number}・${esc(memberName(i.by))}・${new Date(i.at).toLocaleDateString('ja-JP')}${i.comments ? `・コメント${i.comments}` : ''}</span>
+          </div>
+          ${i.v.hitokoto ? `<div class="note">視聴後の一言：${esc(i.v.hitokoto)}</div>` : ''}
+          ${i.v.memo ? `<div class="rv-idea-memo">${linkify(i.v.memo.slice(0, 240))}</div>` : ''}
+        </div>
+        <div class="rv-idea-acts">
+          <button class="btn sm" data-idea-open="${i.number}">${can ? '開く・編集' : '開く'}</button>
+          ${can && !i.labels.includes('ネタ承認') ? `<button class="btn ok sm" data-idea-ok="${i.number}" ${miss.length ? 'disabled title="必須の項目を埋めると承認できます"' : ''}>ネタ承認</button>` : ''}
+        </div>
+      </div>`;
+    }).join('') : '<div class="empty">まだネタはありません。上の欄からメモできます。</div>'}</div>
+    <div class="note" style="margin-top:10px">「ネタ承認」を押すと、GitHub Actions が <code>videos/</code> に企画ファイルを作り、Issue を閉じます（数十秒〜1分）。できた企画は「レビュー待ち」から開けます。</div>`;
+  bindRvNav();
+  const save = $('#idSave'); if (save) save.onclick = e => guarded(e.currentTarget, async () => {
+    const memo = $('#idMemo').value.trim(), title = $('#idTitle').value.trim();
+    if (!memo && !title) return toast('思いついたことを書いてください', true);
+    const v = { title, memo }; await createIdea(v); toast('ネタをメモしました'); renderIdeas();
+  });
+  const det = $('#idDetail'); if (det) det.onclick = () => ideaForm(null, { memo: $('#idMemo').value.trim(), title: $('#idTitle').value.trim() });
+  $$('[data-idea-open]', el).forEach(b => b.onclick = () => ideaForm(rv.ideas.find(i => i.number === +b.dataset.ideaOpen)));
+  $$('[data-idea-ok]', el).forEach(b => b.onclick = () => approveIdea(rv.ideas.find(i => i.number === +b.dataset.ideaOk)));
+}
+async function createIdea(v) {
+  await api.createIssue({ title: ideaTitle(v), body: ideaBody(v, me().id), labels: ['ネタ'] });
+  rv.ideas = null; await loadIdeas(true);
+}
+function ideaForm(idea, preset = {}) {
+  const v = idea ? idea.v : { ...preset }, can = canReview();
+  const field = f => {
+    const val = v[f.key] || '';
+    const dis = can ? '' : 'disabled';
+    if (f.type === 'select') return `<div class="f"><label for="if_${f.key}">${f.label}${f.req ? '（必須）' : ''}</label><select id="if_${f.key}" ${dis}><option value="">（未選択）</option>${f.opts.map(o => `<option ${o === val || (val && o.startsWith(val.split(' ')[0])) ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select></div>`;
+    if (f.type === 'textarea') return `<div class="f full"><label for="if_${f.key}">${f.label}</label><textarea id="if_${f.key}" placeholder="${esc(f.ph || '')}" ${dis}>${esc(val)}</textarea></div>`;
+    return `<div class="f ${f.key === 'title' ? 'full' : ''}"><label for="if_${f.key}">${f.label}${f.req ? '（必須）' : ''}</label><input id="if_${f.key}" value="${esc(val)}" placeholder="${esc(f.ph || '')}" ${dis}></div>`;
+  };
+  openModal(`<div class="head"><div><div class="note">${idea ? `ネタ #${idea.number}` : '新しいネタ'}</div><h2>${idea ? esc(v.title || 'ネタ') : 'ネタをメモする'}</h2></div><span class="sp"></span><button class="btn sm" data-close>閉じる</button></div>
+    <div class="fgrid">${IDEA_FIELDS.map(field).join('')}</div>
+    ${idea && idea.url && !api.demo ? `<a class="note" href="${idea.url}" target="_blank" rel="noopener">GitHub の Issue で見る（コメント・Claude の提案など）</a>` : ''}
+    ${can ? `<div style="display:flex;justify-content:space-between;gap:8px;margin-top:16px;flex-wrap:wrap">
+      ${idea ? '<button class="btn danger" id="ifDrop">見送る</button>' : '<span></span>'}
+      <span style="display:flex;gap:8px"><button class="btn" data-close>キャンセル</button><button class="btn pri" id="ifSave">${idea ? '保存' : 'メモする'}</button></span></div>` : ''}`);
+  $$('[data-close]', $('#sheet')).forEach(x => x.onclick = closeModal);
+  const read = () => Object.fromEntries(IDEA_FIELDS.map(f => [f.key, $('#if_' + f.key).value.trim()]));
+  const s = $('#ifSave'); if (s) s.onclick = e => guarded(e.currentTarget, async () => {
+    const nv = read(); if (!nv.title && !nv.memo) return toast('タイトル案かメモを書いてください', true);
+    if (idea) { await api.updateIssue(idea.number, { title: ideaTitle(nv), body: ideaBody(nv, idea.by || me().id) }); rv.ideas = null; await loadIdeas(true); }
+    else await createIdea(nv);
+    closeModal(); toast('保存しました'); renderIdeas();
+  });
+  const d = $('#ifDrop'); if (d) d.onclick = () => dropIdea(idea);
+}
+async function approveIdea(idea) {
+  const miss = ideaMissing(idea.v); if (miss.length) return toast(`未記入：${miss.join('・')}`, true);
+  openModal(`<div class="head"><h2>ネタ承認</h2><span class="sp"></span><button class="btn sm" data-close>閉じる</button></div>
+    <p style="font-size:13px">「${esc(idea.v.title)}」を承認します。GitHub Actions が <code>videos/</code> に企画ファイル（status: ネタ）を作り、この Issue を閉じます。</p>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px"><button class="btn" data-close>キャンセル</button><button class="btn ok" id="iaOk">承認する</button></div>`);
+  $$('[data-close]', $('#sheet')).forEach(x => x.onclick = closeModal);
+  $('#iaOk').onclick = e => guarded(e.currentTarget, async () => {
+    const labels = [...new Set([...idea.labels, 'ネタ承認'])];
+    await api.updateIssue(idea.number, { labels });
+    closeModal(); toast('承認しました。1分ほどで企画ファイルができます');
+    rv.ideas = null; state.plans = null; await renderIdeas();
+  });
+}
+function dropIdea(idea) {
+  openModal(`<div class="head"><h2>このネタを見送る</h2><span class="sp"></span><button class="btn sm" data-close>閉じる</button></div>
+    <div class="f"><label for="idrReason">理由（必須・Issue のコメントに残ります）</label><textarea id="idrReason"></textarea></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px"><button class="btn" data-close>キャンセル</button><button class="btn danger" id="idrOk">見送る</button></div>`);
+  $$('[data-close]', $('#sheet')).forEach(x => x.onclick = closeModal);
+  $('#idrOk').onclick = e => guarded(e.currentTarget, async () => {
+    const r = $('#idrReason').value.trim(); if (!r) return toast('理由を入力してください', true);
+    await api.addComment(idea.number, `**見送り**（${me().name}）\n${r}`);
+    await api.updateIssue(idea.number, { labels: [...new Set([...idea.labels, '見送り'])], state: 'closed' });
+    closeModal(); toast('見送りました'); rv.ideas = null; renderIdeas();
+  });
 }
 
 /* ---------- 画面：リポジトリの地図 ---------- */

@@ -836,7 +836,7 @@ function renderChanSel() {
    状態
    ========================================================= */
 const state = {
-  cfg: LS.get('fy_cfg', { owner: 'kotatakata', repo: 'fuyantech', branch: 'main', token: '', me: 'tomidokoro' }),
+  cfg: (c => (c.owner || '').toLowerCase() === 'kotatakata' && c.repo === 'fuyantech' ? { ...c, owner: 'Fuyantech-studio', repo: 'kikaku', label: c.label || 'Fuyan Tech' } : c)(LS.get('fy_cfg', { owner: 'Fuyantech-studio', repo: 'kikaku', label: 'Fuyan Tech', branch: 'main', token: '', me: 'tomidokoro' })),
   issuer: LS.get('fy_issuer', null),
   settings: { ...DEFAULT_SETTINGS }, settingsSha: null,
   month: ym(new Date()),
@@ -1616,7 +1616,7 @@ function openSettings() {
     <div class="sec-title">チャンネル（GitHub の接続先）</div>
     ${chs.length > 1 ? `<div class="f"><label for="sChan">保存してある接続先</label><select id="sChan">${chs.map(x => `<option value="${esc(chanKey(x))}" ${chanKey(x) === chanKey(c) ? 'selected' : ''}>${esc(x.label || x.owner)}（${esc(x.owner)}）</option>`).join('')}<option value="__new">＋ 新しいチャンネルを追加</option></select></div>` : ''}
     <div class="fgrid">
-      <div class="f"><label>Organization（またはユーザー名）</label><input id="sOwner" value="${esc(c.owner)}" placeholder="fuyantech"></div>
+      <div class="f"><label>Organization（またはユーザー名）</label><input id="sOwner" value="${esc(c.owner)}" placeholder="Fuyantech-studio"></div>
       <div class="f"><label>企画リポジトリ名</label><input id="sRepo" value="${esc(c.repo)}" placeholder="kikaku"></div>
       <div class="f"><label>表示名（切り替えに使う名前）</label><input id="sLabel" value="${esc(c.label || '')}" placeholder="Fuyan Tech"></div>
       <div class="f"><label>ブランチ</label><input id="sBranch" value="${esc(c.branch || 'main')}"></div>
@@ -2658,6 +2658,9 @@ $$('.line button').forEach(b => b.onclick = () => setTab(b.dataset.tab));
 
 async function boot() {
   const c = state.cfg;
+  // 旧URL（kotatakata/fuyantech）の設定は、Organization に移した先へ書き換えて保存する
+  const saved = LS.get('fy_cfg', null);
+  if (saved && chanKey(saved) !== chanKey(c)) { LS.set('fy_cfg', c); LS.set('fy_channels', LS.get('fy_channels', []).map(x => chanKey(x) === chanKey(saved) ? c : x)); }
   api = (c.token && c.owner && c.repo) ? new GitHubBackend(c) : new DemoBackend();
   $('#demoBanner').classList.toggle('hide', !api.demo);
   document.body.classList.add('loading');

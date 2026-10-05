@@ -145,6 +145,92 @@ table.t tr.ex td{color:var(--ink-3)}
 .pdfroot .small{font-size:10.5px;color:#444}
 .pdfroot .box{border:1px solid #999;padding:8px 10px;margin-bottom:12px;white-space:pre-wrap}
 .pb{page-break-before:always;break-before:page}
+/* ===== レビュー ===== */
+.rv-nav{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.rv-nav .sp{flex:1}
+.seg{display:inline-flex;background:var(--tile);border-radius:10px;padding:3px;gap:3px;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:6px 12px;border-radius:8px;cursor:pointer;font-weight:500;color:var(--ink-2)}
+.seg button.on{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+.seg .num{margin-left:6px;font-size:11px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.rv-filters{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.rv-search{flex:1 1 200px;max-width:320px}
+.check{display:flex;gap:6px;align-items:center;font-size:13px;cursor:pointer}
+.rv-list-wrap{display:flex;flex-direction:column;gap:8px}
+.rv-row{display:grid;grid-template-columns:48px minmax(0,1fr) 64px;gap:12px;align-items:center;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;box-shadow:var(--shadow)}
+.rv-row:hover{border-color:var(--aqua)}
+.rv-id{font-size:18px;font-weight:700;color:var(--ink-2)}
+.rv-main{display:flex;flex-direction:column;gap:6px;min-width:0}
+.rv-title{font-weight:700;line-height:1.45}
+.chips{display:flex;flex-wrap:wrap;gap:4px}
+.rv-count{text-align:center;font-size:11px;color:var(--ink-3);line-height:1.3}
+.rv-count.has{color:var(--bad)} .rv-count b{font-size:18px}
+.rv-doc-head{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:10px}
+.rv-doc-title{flex:1 1 260px;min-width:0}
+.rv-doc-title h2{margin:2px 0 0;font-size:19px;line-height:1.4;font-family:"Zen Maru Gothic",sans-serif}
+.rv-doc-title code{word-break:break-all}
+.rv-doc-acts{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+a.btn{text-decoration:none;color:var(--ink);display:inline-flex;align-items:center}
+.rv-related{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.rv-related .chip{cursor:pointer;border:1px solid var(--line)}
+.rv-judge{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 12px;background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:10px}
+.rv-undo{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between;padding:10px 12px;background:var(--warn-bg);color:#6b4a12;border-radius:12px;margin-bottom:10px;font-size:13px}
+.rv-notes{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-bottom:10px}
+.rv-notes summary{cursor:pointer;font-size:13px;color:var(--ink-2)}
+.rv-notes .timeline{margin-top:10px}
+.tl.done{opacity:.6}
+.tl.claude:before{background:var(--ok-bg);border-color:var(--ok)}
+.rv-q{font-size:12px;color:var(--ink-3);border-left:3px solid var(--line);padding-left:8px;margin:2px 0}
+.rv-hint{margin:6px 2px 10px}
+.rv-body{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow);line-height:1.8;min-width:0;overflow-wrap:anywhere}
+.rv-body.rv-html{padding:0;background:#fff}
+.rv-body h2,.rv-body h3,.rv-body h4,.rv-body h5{margin:18px 0 6px;line-height:1.45}
+.rv-body h2{font-size:20px}.rv-body h3{font-size:16px;border-bottom:1px solid var(--line);padding-bottom:4px}.rv-body h4{font-size:15px}
+.rv-body p{margin:6px 0}
+.rv-body blockquote{margin:8px 0;padding:6px 12px;border-left:3px solid var(--line);color:var(--ink-2)}
+.rv-body pre{background:var(--tile);padding:10px;border-radius:8px;overflow-x:auto;white-space:pre-wrap}
+.rv-body code{background:var(--tile);padding:0 4px;border-radius:4px;font-size:.92em}
+.rv-list{margin:6px 0;padding-left:1.4em}
+.rv-table{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}
+.rv-table th,.rv-table td{border:1px solid var(--line);padding:6px 8px;vertical-align:top;text-align:left}
+.rv-table thead th{background:var(--tile);font-weight:700}
+.rv-fm{margin-bottom:10px}.rv-fm summary{cursor:pointer;font-size:13px;color:var(--ink-3)}
+.rv-fm .rv-table th{width:140px;font-family:ui-monospace,monospace;font-weight:500;color:var(--ink-2);background:var(--bg)}
+.rv-blk{cursor:pointer;border-radius:6px;transition:background .15s;position:relative}
+.rv-blk:hover{background:rgba(31,138,140,.07)}
+.rv-blk:focus-visible{outline:2px solid var(--aqua)}
+.rv-blk.has-note{background:var(--warn-bg)}
+.rv-blk.has-done{background:var(--ok-bg)}
+p.rv-blk.has-note::after,li.rv-blk.has-note::after,h3.rv-blk.has-note::after,h2.rv-blk.has-note::after,h4.rv-blk.has-note::after,blockquote.rv-blk.has-note::after{content:attr(data-count);position:absolute;right:4px;top:4px;background:var(--warn);color:#fff;border-radius:99px;font-size:11px;min-width:20px;height:20px;line-height:20px;text-align:center;padding:0 5px}
+tr.rv-blk.has-note td:first-child,tr.rv-blk.has-note th:first-child{box-shadow:inset 4px 0 0 var(--warn)}
+.rv-blk.flash{outline:3px solid var(--aqua)}
+.rv-sheet-quote{font-size:13px;border-left:3px solid var(--aqua);padding:4px 10px;color:var(--ink-2);background:var(--bg);border-radius:0 8px 8px 0;max-height:140px;overflow:auto}
+.rv-existing{background:var(--bg);border-radius:10px;padding:8px 10px;margin-bottom:6px;font-size:13px}
+.rv-existing.done{opacity:.6}
+.rv-kinds{gap:10px}
+.rv-kinds label{border:1px solid var(--line);border-radius:99px;padding:4px 12px;background:var(--card)}
+.rv-kinds label:has(input:checked){border-color:var(--aqua);background:var(--aqua-2)}
+.rv-flow{display:flex;flex-direction:column;gap:0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow)}
+.rv-step{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;position:relative;padding-bottom:18px}
+.rv-step:not(:last-child):before{content:"";position:absolute;left:10px;top:20px;bottom:0;width:2px;background:var(--tile)}
+.rv-dot{width:22px;height:22px;border-radius:50%;border:3px solid var(--line);background:var(--card);z-index:1}
+.rv-step.ok .rv-dot{border-color:var(--aqua);background:var(--aqua-2)}
+.rv-step-body{display:flex;flex-direction:column;gap:6px;min-width:0}
+.rv-step-title{font-weight:700}
+.rv-annken{display:flex;flex-direction:column;gap:4px}
+.rv-pipeline{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.rv-pipe{display:flex;flex-direction:column;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:6px 10px;min-width:0}
+.rv-arrow{color:var(--ink-3)}
+.rv-map{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px;margin-bottom:8px}
+.rv-folder{display:flex;flex-direction:column;gap:4px;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer;min-width:0}
+.rv-folder:hover{border-color:var(--aqua)}
+.rv-fname{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-weight:500;word-break:break-all}
+@media (max-width:600px){
+  .rv-row{grid-template-columns:40px minmax(0,1fr) 48px;padding:10px}
+  .rv-body{padding:14px 12px}
+  .rv-fm .rv-table th{width:96px}
+  .rv-map{grid-template-columns:1fr}
+}
+
 /* iPhone / iPad：入力欄の文字が16px未満だと、タップ時にSafariが勝手に拡大する */
 @media (max-width:1100px){.f input,.f select,.f textarea{font-size:16px}}
 /* スマホ幅 */
@@ -191,6 +277,7 @@ table.t tr.ex td{color:var(--ink-3)}
     <nav class="tabs" role="tablist">
       <button data-tab="att" class="on">勤務管理</button>
       <button data-tab="vid">動画納品管理</button>
+      <button data-tab="rev">レビュー</button>
     </nav>
     <div class="who">
       <span class="chip aqua" id="meChip"></span>
@@ -307,6 +394,9 @@ table.t tr.ex td{color:var(--ink-3)}
     </div>
     <div class="kanban" id="kanban"></div>
   </section>
+
+  <!-- ========== レビュー ========== -->
+  <section id="tab-rev" class="hide"><div id="rv"></div></section>
 </main>
 
 <!-- detail / form modal -->
@@ -419,6 +509,25 @@ class GitHubBackend {
     catch (e) { if (e.status === 404) return null; throw e; }
   }
   fileUrl(path) { return `https://github.com/${this.c.owner}/${this.c.repo}/blob/${this.c.branch || 'main'}/${path.split('/').map(encodeURIComponent).join('/')}`; }
+  async readFile(path) {
+    try { const j = await this.req('GET', `${this.rp}/contents/${this.p(path)}${this.ref()}`); return { text: b64dec(j.content), sha: j.sha }; }
+    catch (e) { if (e.status === 404) return null; throw e; }
+  }
+  async readTextAt(path, ref) {
+    try { const j = await this.req('GET', `${this.rp}/contents/${this.p(path)}?ref=${encodeURIComponent(ref)}`); return b64dec(j.content); }
+    catch (e) { if (e.status === 404) return null; throw e; }
+  }
+  writeText(path, text, sha, message) { return this.writeB64(path, b64enc(text), sha, message); }
+  async lastCommitFor(path) { const r = await this.req('GET', `${this.rp}/commits?path=${encodeURIComponent(path)}&sha=${encodeURIComponent(this.c.branch || 'main')}&per_page=1`); return r[0]?.sha || null; }
+  async listIssuesByLabel(label) {
+    let all = [], page = 1;
+    while (true) {
+      const r = await this.req('GET', `${this.rp}/issues?labels=${encodeURIComponent(label)}&state=all&per_page=100&page=${page}`);
+      all = all.concat(r.filter(x => !x.pull_request)); if (r.length < 100) break; page++;
+    }
+    return all;
+  }
+  updateComment(id, body) { return this.req('PATCH', `${this.rp}/issues/comments/${id}`, { body }); }
   async getSha(path) {
     try { return (await this.req('GET', `${this.rp}/contents/${this.p(path)}${this.ref()}`)).sha; }
     catch (e) { if (e.status === 404) return null; throw e; }
@@ -471,7 +580,17 @@ class DemoBackend {
   }
   async readJSON(path) { const f = this.s.files[path]; return f ? { data: JSON.parse(b64dec(f.content)), sha: f.sha } : { data: null, sha: null }; }
   async getSha(path) { return this.s.files[path]?.sha || null; }
-  async readText(path) { return DEMO_PLANS[path] ?? null; }
+  async readText(path) { const f = this.s.files[path]; return f ? b64dec(f.content) : (DEMO_PLANS[path] ?? null); }
+  async readFile(path) { const f = this.s.files[path]; if (f) return { text: b64dec(f.content), sha: f.sha }; const t = DEMO_PLANS[path]; return t == null ? null : { text: t, sha: null }; }
+  async readTextAt(path, ref) { return (this.s.commits || {})[ref]?.text ?? null; }
+  async writeText(path, text, sha) {
+    const cur = await this.readFile(path); if (cur && cur.sha !== sha) { const e = new Error('conflict'); e.status = 409; throw e; }
+    const c = 'c' + uid(); (this.s.commits ||= {})[c] = { path, text: cur ? cur.text : '' };
+    this.s.files[path] = { content: b64enc(text), sha: uid() }; this.save(); return { commit: { sha: c } };
+  }
+  async lastCommitFor() { return null; }
+  async listIssuesByLabel(label) { return JSON.parse(JSON.stringify(this.s.issues.filter(i => i.labels.some(l => l.name === label)))); }
+  async updateComment(id, body) { for (const k in this.s.comments) { const c = this.s.comments[k].find(x => x.id === id); if (c) { c.body = body; this.save(); return c; } } }
   fileUrl() { return null; }
   async writeB64(path, content, sha) {
     const cur = this.s.files[path];
@@ -479,17 +598,17 @@ class DemoBackend {
     this.s.files[path] = { content, sha: uid() }; this.save(); return {};
   }
   async listDir(path) {
-    if (path === 'daihon/pdf') return [{ name: '070-sample.pdf', type: 'file' }];
     const pre = path.replace(/\/$/, '') + '/'; const out = new Map();
-    for (const k of Object.keys(this.s.files)) if (k.startsWith(pre)) { const rest = k.slice(pre.length); const name = rest.split('/')[0]; out.set(name, rest.includes('/') ? 'dir' : 'file'); }
+    if (path === 'daihon/pdf') out.set('070-sample.pdf', 'file');
+    for (const k of [...Object.keys(this.s.files), ...Object.keys(DEMO_PLANS), ...(DEMO_PLANS.__extra || [])]) if (k.startsWith(pre)) { const rest = k.slice(pre.length); const name = rest.split('/')[0]; out.set(name, rest.includes('/') ? 'dir' : 'file'); }
     return [...out].map(([name, type]) => ({ name, type }));
   }
-  async listIssues() { return JSON.parse(JSON.stringify(this.s.issues)).reverse(); }
+  async listIssues() { return JSON.parse(JSON.stringify(this.s.issues.filter(i => i.labels.some(l => l.name === BASE_LABEL)))).reverse(); }
   async getIssue(n) { return JSON.parse(JSON.stringify(this.s.issues.find(i => i.number === n))); }
   async createIssue(o) { const n = ++this.s.n; const i = { number: n, title: o.title, body: o.body, state: 'open', html_url: '#', labels: o.labels.map(name => ({ name })), created_at: new Date().toISOString(), user: { login: me().name } }; this.s.issues.push(i); this.s.comments[n] = []; this.save(); return i; }
   async updateIssue(n, o) { const i = this.s.issues.find(x => x.number === n); if (o.title != null) i.title = o.title; if (o.body != null) i.body = o.body; if (o.state) i.state = o.state; if (o.labels) i.labels = o.labels.map(name => ({ name })); this.save(); return i; }
   async listComments(n) { return this.s.comments[n] || []; }
-  async addComment(n, body) { (this.s.comments[n] ||= []).push({ body, created_at: new Date().toISOString(), user: { login: me().name } }); this.save(); }
+  async addComment(n, body) { const c = { id: Date.now() * 10 + Math.floor(Math.random() * 10), body, created_at: new Date().toISOString(), html_url: '#', user: { login: me().name } }; (this.s.comments[n] ||= []).push(c); this.save(); return c; }
   async whoami() { return { login: 'demo' }; }
   async ensureLabels() {}
   issueUrl() { return null; }
@@ -1324,14 +1443,676 @@ function openSettings() {
   });
 }
 
+const RV_SHADOW_CSS = `
+.rv-html-page{padding:18px 20px;background:#fff;color:#111;font-size:14px;line-height:1.8;overflow-wrap:anywhere}
+.rv-html-page table{max-width:100%}
+.rv-blk{cursor:pointer;border-radius:4px;position:relative}
+.rv-blk:hover{background:rgba(31,138,140,.08)}
+.rv-blk:focus-visible{outline:2px solid #1f8a8c}
+.rv-blk.has-note{background:#fdf3dc}
+.rv-blk.has-done{background:#e1f2e6}
+p.has-note::after,li.has-note::after,div.has-note::after,h2.has-note::after,h3.has-note::after{content:attr(data-count);position:absolute;right:2px;top:2px;background:#b7791f;color:#fff;border-radius:99px;font-size:11px;min-width:20px;height:20px;line-height:20px;text-align:center;padding:0 5px}
+tr.has-note td:first-child{box-shadow:inset 4px 0 0 #b7791f}
+.rv-blk.flash{outline:3px solid #1f8a8c}
+@media (max-width:600px){.rv-html-page{padding:14px 12px}.rv-html-page table{display:block;overflow-x:auto}}
+`;
+/* =========================================================
+   レビュー（企画書・台本・案件への修正メモ／採否／元に戻す／地図）
+   要件：tools/seisakushitsu/レビュー機能_要件.md
+   ========================================================= */
+const RV_LABEL = 'レビュー';
+const NOTE_KINDS = {
+  rewrite: { label: '書き直してほしい', icon: '✏️', chip: 'aqua' },
+  question: { label: '質問・相談', icon: '💬', chip: '' },
+  factcheck: { label: '事実確認', icon: '🔎', chip: 'warn' }
+};
+const PLAN_STATUSES = ['レビュー待ち', '要修正', '承認済', '撮影', '編集', '公開', 'ネタ', '下書き', 'ボツ'];
+const ANNKEN_MEMO_FILES = ['企画提案書.md', '案件概要.md', '価格考察.md', '返信案.md'];
+const rv = {
+  view: 'list', filter: 'レビュー待ち', onlyOpen: false, q: '',
+  byPath: {}, loaded: false, loading: null,
+  links: null, tplCss: null,
+  doc: null, folder: '', planId: null, sheet: null
+};
+const canReview = () => ['owner', 'partner'].includes(me().role);
+function canMemo(path) {
+  if (!canReview()) return false;
+  if (/^videos\/[^/]+\.md$/.test(path)) return true;
+  if (/^daihon\/html\/[^/]+\.html$/.test(path)) return true;
+  const m = /^annken\/([^/]+)\/([^/]+)$/.exec(path);
+  return !!(m && !m[1].startsWith('_') && ANNKEN_MEMO_FILES.includes(m[2]));
+}
+function docKind(path) {
+  if (path.startsWith('videos/')) return '企画書';
+  if (path.startsWith('daihon/html/')) return '台本';
+  if (path.startsWith('daihon/')) return '旧台本';
+  if (path.startsWith('annken/')) return '案件';
+  if (path.startsWith('manual/')) return 'マニュアル';
+  if (path.startsWith('plan/')) return '計画書';
+  if (path.startsWith('docs/')) return '自動生成';
+  return '書類';
+}
+const planIdOf = path => {
+  const m = /^(?:videos|daihon\/html|daihon\/pdf|daihon)\/(\d{3})-/.exec(path); if (m) return m[1];
+  const a = /^annken\/([^/]+)\//.exec(path);
+  if (a && rv.links) { const ids = Object.keys(rv.links.annken).filter(id => rv.links.annken[id].includes(a[1])); if (ids.length === 1 || (ids.length && ids.includes(rv.planId))) return ids.includes(rv.planId) ? rv.planId : ids[0]; }
+  return null;
+};
+const todayStr = () => ymd(new Date());
+
+/* ---------- メモ・返信の読み書き（Issue コメント） ---------- */
+function parseMeta(body, tag) {
+  const m = new RegExp(`<!-- ${tag}\\s*([\\s\\S]*?)\\s*-->`).exec(body || '');
+  if (!m) return null; try { return JSON.parse(m[1]); } catch { return null; }
+}
+const metaBlock = (tag, obj) => `<!-- ${tag}\n${JSON.stringify(obj).replace(/-->/g, '--\\u003e')}\n-->`;
+function noteBody(meta, text) {
+  const k = NOTE_KINDS[meta.kind] || NOTE_KINDS.rewrite;
+  const quote = (meta.anchor?.quote || '').slice(0, 200);
+  return `${metaBlock('fy-note', meta)}\n**${k.icon} ${k.label}**（${memberName(meta.by)}）　${meta.anchor?.label ? `『${meta.anchor.label}』` : ''} ${meta.anchor?.line ? `${meta.anchor.line}行目付近` : ''}\n\n> ${quote.replace(/\n/g, ' ')}\n\n${text}`;
+}
+function noteText(body) { return String(body || '').replace(/<!--[\s\S]*?-->\s*/, '').replace(/^\*\*[^\n]*\n+(> [^\n]*\n+)?/, '').trim(); }
+async function loadReviewIssues(force) {
+  if (rv.loaded && !force) return;
+  if (rv.loading && !force) return rv.loading;
+  rv.loading = (async () => {
+    const list = await api.listIssuesByLabel(RV_LABEL);
+    const byPath = {};
+    await Promise.all(list.map(async iss => {
+      const meta = parseMeta(iss.body, 'fy-review'); if (!meta?.path) return;
+      const comments = await api.listComments(iss.number);
+      byPath[meta.path] = buildDocNotes(iss, comments);
+    }));
+    rv.byPath = byPath; rv.loaded = true;
+  })();
+  try { await rv.loading; } finally { rv.loading = null; }
+}
+function buildDocNotes(iss, comments) {
+  const notes = [], replies = [], reverts = [];
+  for (const c of comments) {
+    const n = parseMeta(c.body, 'fy-note');
+    if (n) { notes.push({ ...n, id: c.id, body: c.body, text: noteText(c.body), at: c.created_at, url: c.html_url }); continue; }
+    const r = parseMeta(c.body, 'fy-reply');
+    if (r) { replies.push({ ...r, id: c.id, text: String(c.body).replace(/<!--[\s\S]*?-->\s*/, '').trim(), at: c.created_at, url: c.html_url }); continue; }
+    const v = parseMeta(c.body, 'fy-revert');
+    if (v) reverts.push({ ...v, id: c.id, at: c.created_at });
+  }
+  return { issue: iss, notes, replies, reverts };
+}
+async function refreshDocNotes(path) {
+  const d = rv.byPath[path]; if (!d) return;
+  rv.byPath[path] = buildDocNotes(d.issue, await api.listComments(d.issue.number));
+}
+const openCount = path => (rv.byPath[path]?.notes || []).filter(n => n.status !== 'done').length;
+async function ensureReviewIssue(path) {
+  if (rv.byPath[path]) return rv.byPath[path];
+  const url = api.fileUrl(path);
+  const iss = await api.createIssue({
+    title: `レビュー：${path}`,
+    body: `${metaBlock('fy-review', { path })}\n\n**${docKind(path)}** \`${path}\` への修正メモです。${url ? `\n\n${url}` : ''}\n\n---\n<sub>メモは制作室ツールの「レビュー」タブから書き込みます。Claude は未対応のメモを読んで反映し、このIssueに返信します。</sub>`,
+    labels: [RV_LABEL]
+  });
+  rv.byPath[path] = buildDocNotes(iss, []);
+  return rv.byPath[path];
+}
+async function addNote(path, anchor, kind, text) {
+  const d = await ensureReviewIssue(path);
+  const meta = { v: 1, path, kind, anchor, status: 'open', by: me().id };
+  await api.addComment(d.issue.number, noteBody(meta, text));
+  await refreshDocNotes(path);
+}
+async function setNoteStatus(path, note, status) {
+  const meta = parseMeta(note.body, 'fy-note'); meta.status = status;
+  await api.updateComment(note.id, note.body.replace(/<!-- fy-note[\s\S]*?-->/, metaBlock('fy-note', meta)));
+  await refreshDocNotes(path);
+}
+
+/* ---------- 関連づけ（台本・案件・発注） ---------- */
+async function loadLinks(force) {
+  if (rv.links && !force) return rv.links;
+  const links = { scripts: {}, pdfs: {}, annken: {}, annkenDirs: [] };
+  const [html, pdf, ann] = await Promise.all([api.listDir('daihon/html'), api.listDir('daihon/pdf'), api.listDir('annken')]);
+  html.filter(f => f.name.endsWith('.html')).forEach(f => { const id = f.name.slice(0, 3); links.scripts[id] = 'daihon/html/' + f.name; });
+  pdf.filter(f => f.name.endsWith('.pdf')).forEach(f => { links.pdfs[f.name.slice(0, 3)] = 'daihon/pdf/' + f.name; });
+  const dirs = ann.filter(f => f.type === 'dir' && !f.name.startsWith('_') && f.name !== 'pdf').map(f => f.name);
+  links.annkenDirs = dirs;
+  await Promise.all(dirs.map(async dir => {
+    const t = await api.readText(`annken/${dir}/案件概要.md`);
+    for (const m of String(t || '').matchAll(/videos\/(\d{3})-/g)) (links.annken[m[1]] ||= new Set()).add(dir);
+  }));
+  for (const k in links.annken) links.annken[k] = [...links.annken[k]];
+  rv.links = links; return links;
+}
+
+/* ---------- Markdown をタップ単位に分ける ---------- */
+function inlineMd(s, basePath) {
+  let h = esc(s);
+  h = h.replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, t, href) => {
+      const raw = href.replace(/&amp;/g, '&');
+      if (/^https?:/.test(raw)) return `<a href="${esc(raw)}" target="_blank" rel="noopener">${t}</a>`;
+      const p = resolvePath(basePath, raw.split('#')[0]);
+      return `<a href="#" data-open="${esc(p)}">${t}</a>`;
+    })
+    .replace(/(^|[^"=])(https?:\/\/[^\s<]+)/g, '$1<a href="$2" target="_blank" rel="noopener">$2</a>');
+  return h;
+}
+function resolvePath(base, rel) {
+  const parts = base.split('/'); parts.pop();
+  for (const seg of rel.split('/')) { if (seg === '..') parts.pop(); else if (seg && seg !== '.') parts.push(seg); }
+  return parts.join('/');
+}
+const plain = s => String(s || '').replace(/<[^>]+>/g, '').replace(/\*\*|`/g, '').replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/\s+/g, ' ').trim();
+function parseMarkdown(text, path) {
+  const lines = String(text).replace(/\r/g, '').split('\n');
+  const blocks = []; let i = 0, ctx = '';
+  const push = (b) => { b.idx = blocks.length; b.label ||= ctx; blocks.push(b); return b; };
+  if (lines[0] === '---') {
+    let j = 1; const fm = [];
+    while (j < lines.length && lines[j] !== '---') { fm.push(j); j++; }
+    let cur = null;
+    for (const k of fm) {
+      const ln = lines[k];
+      if (/^[A-Za-z_]+:/.test(ln)) {
+        const key = ln.slice(0, ln.indexOf(':')); let val = ln.slice(ln.indexOf(':') + 1);
+        const cm = /\s#\s?(.*)$/.exec(val); const note = cm ? cm[1] : '';
+        val = val.replace(/\s+#.*$/, '').trim().replace(/^"(.*)"$/, '$1');
+        cur = push({ type: 'fm', key, val, note, line: k + 1, quote: `${key}: ${val}`, label: 'フロントマター', sub: [] });
+      } else if (cur && /^\s+\S/.test(ln)) {
+        const s = ln.trim(); cur.sub.push(s.replace(/\s+#.*$/, '')); cur.quote += ' ' + s.replace(/\s+#.*$/, '');
+      }
+    }
+    i = j + 1;
+  }
+  while (i < lines.length) {
+    const ln = lines[i];
+    if (!ln.trim()) { i++; continue; }
+    if (/^\s*<!--/.test(ln)) { while (i < lines.length && !/-->/.test(lines[i])) i++; i++; continue; }
+    let m;
+    if ((m = /^(#{1,6})\s+(.*)$/.exec(ln))) { ctx = plain(m[2]); push({ type: 'h', level: m[1].length, html: inlineMd(m[2], path), line: i + 1, quote: plain(m[2]), label: ctx }); i++; continue; }
+    if (/^```/.test(ln)) { const st = i; const buf = []; i++; while (i < lines.length && !/^```/.test(lines[i])) buf.push(lines[i++]); i++; push({ type: 'pre', html: esc(buf.join('\n')), line: st + 1, quote: buf.join(' ').slice(0, 120) }); continue; }
+    if (/^\s*\|/.test(ln)) {
+      const rows = []; while (i < lines.length && /^\s*\|/.test(lines[i])) { rows.push({ text: lines[i], line: i + 1 }); i++; }
+      const cells = r => r.text.trim().replace(/^\||\|$/g, '').split('|').map(c => c.trim());
+      const isSep = r => /^\s*\|?\s*:?-{2,}/.test(r.text.replace(/\|/g, '|'));
+      const head = rows[0] && rows[1] && isSep(rows[1]) ? cells(rows[0]) : null;
+      const body = head ? rows.slice(2) : rows;
+      const tbl = { type: 'table', head: head ? head.map(c => inlineMd(c, path)) : null, rows: [], line: rows[0].line };
+      blocks.push(tbl); tbl.idx = blocks.length - 1; tbl.skip = true;
+      for (const r of body) { const c = cells(r); tbl.rows.push(push({ type: 'tr', cells: c.map(x => inlineMd(x, path)), line: r.line, quote: c.map(plain).join(' ｜ '), label: ctx + (head && c[0] ? ` / ${plain(c[0])}` : '') })); }
+      continue;
+    }
+    if ((m = /^(\s*)([-*+]|\d+\.)\s+(.*)$/.exec(ln))) {
+      const st = i; const ordered = /\d/.test(m[2]); let txt = m[3]; i++;
+      while (i < lines.length && /^\s{2,}\S/.test(lines[i]) && !/^\s*([-*+]|\d+\.)\s+/.test(lines[i])) txt += ' ' + lines[i++].trim();
+      push({ type: 'li', ordered, depth: m[1].length, html: inlineMd(txt, path), line: st + 1, quote: plain(txt) }); continue;
+    }
+    if (/^>/.test(ln)) { const st = i; const buf = []; while (i < lines.length && /^>/.test(lines[i])) buf.push(lines[i++].replace(/^>\s?/, '')); push({ type: 'quote', html: buf.map(b => inlineMd(b, path)).join('<br>'), line: st + 1, quote: plain(buf.join(' ')) }); continue; }
+    if (/^(-{3,}|\*{3,})\s*$/.test(ln)) { blocks.push({ type: 'hr', skip: true, idx: blocks.length }); i++; continue; }
+    const st = i; const buf = [];
+    while (i < lines.length && lines[i].trim() && !/^(#{1,6}\s|```|\s*\||\s*([-*+]|\d+\.)\s|>|\s*<!--)/.test(lines[i])) buf.push(lines[i++]);
+    if (!buf.length) { i++; continue; }
+    push({ type: 'p', html: buf.map(b => inlineMd(b, path)).join('<br>'), line: st + 1, quote: plain(buf.join(' ')) });
+  }
+  return blocks;
+}
+function renderMarkdownBlocks(blocks) {
+  const out = []; let listOpen = null; const fms = blocks.filter(b => b.type === 'fm');
+  const tap = b => `data-b="${b.idx}" tabindex="0"`;
+  if (fms.length) {
+    out.push(`<details class="rv-fm"><summary>フロントマター（数値・状態などの設定）を開く</summary><table class="rv-table">${fms.map(b => `<tr class="rv-blk" ${tap(b)}><th>${esc(b.key)}</th><td>${esc(b.val || '')}${b.sub.length ? `<div class="note">${esc(b.sub.join('　'))}</div>` : ''}${b.note ? `<div class="note">${esc(b.note)}</div>` : ''}</td></tr>`).join('')}</table></details>`);
+  }
+  for (const b of blocks) {
+    if (b.type === 'fm' || b.type === 'tr') continue;
+    if (b.type !== 'li' && listOpen) { out.push(`</${listOpen}>`); listOpen = null; }
+    if (b.type === 'li') {
+      const tag = b.ordered ? 'ol' : 'ul';
+      if (listOpen !== tag) { if (listOpen) out.push(`</${listOpen}>`); out.push(`<${tag} class="rv-list">`); listOpen = tag; }
+      out.push(`<li class="rv-blk" ${tap(b)} style="margin-left:${Math.min(b.depth, 6) * 8}px">${b.html}</li>`); continue;
+    }
+    if (b.type === 'h') out.push(`<h${Math.min(b.level + 1, 6)} class="rv-blk rv-h" ${tap(b)}>${b.html}</h${Math.min(b.level + 1, 6)}>`);
+    else if (b.type === 'p') out.push(`<p class="rv-blk" ${tap(b)}>${b.html}</p>`);
+    else if (b.type === 'quote') out.push(`<blockquote class="rv-blk" ${tap(b)}>${b.html}</blockquote>`);
+    else if (b.type === 'pre') out.push(`<pre class="rv-blk" ${tap(b)}>${b.html}</pre>`);
+    else if (b.type === 'hr') out.push('<hr>');
+    else if (b.type === 'table') out.push(`<div class="tablewrap"><table class="rv-table">${b.head ? `<thead><tr>${b.head.map(h => `<th>${h}</th>`).join('')}</tr></thead>` : ''}<tbody>${b.rows.map(r => `<tr class="rv-blk" ${tap(r)}>${r.cells.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`);
+  }
+  if (listOpen) out.push(`</${listOpen}>`);
+  return out.join('\n');
+}
+
+/* ---------- 台本 HTML をタップ単位に分ける ---------- */
+const RV_LEAF = 'h1,h2,h3,h4,p,li,tr,pre,blockquote';
+const RV_BLOCKY = 'p,div,table,ul,ol,h1,h2,h3,h4,pre,blockquote,li,tr,section';
+async function loadTemplateCss() {
+  if (rv.tplCss != null) return rv.tplCss;
+  const t = await api.readText('.claude/skills/youtube-script/assets/template.html');
+  rv.tplCss = (String(t || '').match(/<style[^>]*>([\s\S]*?)<\/style>/gi) || []).map(s => s.replace(/<\/?style[^>]*>/gi, '')).join('\n');
+  return rv.tplCss;
+}
+function prepareHtmlDoc(text) {
+  const doc = new DOMParser().parseFromString(`<body>${text}</body>`, 'text/html');
+  doc.querySelectorAll('script,style,link,iframe,object,embed').forEach(x => x.remove());
+  doc.querySelectorAll('*').forEach(el => [...el.attributes].forEach(a => { if (/^on/i.test(a.name)) el.removeAttribute(a.name); }));
+  const cand = [...doc.body.querySelectorAll(`${RV_LEAF},div`)].filter(el => el.tagName !== 'DIV' || !el.querySelector(RV_BLOCKY));
+  const leaves = cand.filter(el => !cand.some(o => o !== el && el.contains(o)));
+  const srcLines = String(text).split('\n').map(l => l.replace(/<[^>]+>/g, '').replace(/&[a-z]+;/g, ' ').replace(/\s+/g, ''));
+  const blocks = []; let ctx = '', from = 0;
+  for (const el of doc.body.querySelectorAll('*')) {
+    if (/^H[1-4]$/.test(el.tagName)) ctx = el.textContent.trim();
+    if (!leaves.includes(el)) continue;
+    const quote = el.textContent.replace(/\s+/g, ' ').trim(); if (!quote) continue;
+    const key = quote.replace(/\s+/g, '').slice(0, 16);
+    let line = 0;
+    for (let k = from; k < srcLines.length; k++) if (key && srcLines[k].includes(key.slice(0, Math.min(8, key.length)))) { line = k + 1; from = k; break; }
+    const b = { type: 'html', idx: blocks.length, quote: quote.slice(0, 300), line, label: ctx };
+    el.setAttribute('data-b', b.idx); el.setAttribute('tabindex', '0'); el.classList.add('rv-blk');
+    blocks.push(b);
+  }
+  return { html: doc.body.innerHTML, blocks };
+}
+
+/* ---------- メモを書類の場所に結びつける ---------- */
+function attachNotes(blocks, notes) {
+  const map = {}, lost = [];
+  const norm = s => String(s || '').replace(/\s+/g, '');
+  const cand = blocks.filter(b => !b.skip);
+  for (const n of notes) {
+    const q = norm(n.anchor?.quote);
+    let b = q && cand.find(x => norm(x.quote) === q);
+    if (!b && q) b = cand.find(x => norm(x.quote).includes(q.slice(0, 24)) || q.includes(norm(x.quote).slice(0, 24)) && norm(x.quote).length > 8);
+    if (!b && n.anchor?.line) {
+      const near = cand.filter(x => x.line).sort((a, c) => Math.abs(a.line - n.anchor.line) - Math.abs(c.line - n.anchor.line))[0];
+      if (near && Math.abs(near.line - n.anchor.line) <= 3) b = near;
+    }
+    if (b) (map[b.idx] ||= []).push(n); else lost.push(n);
+  }
+  return { map, lost };
+}
+
+/* ---------- 画面：共通 ---------- */
+function rvEl() { return $('#rv'); }
+function rvNav(active) {
+  return `<div class="rv-nav">
+    <div class="seg">
+      <button data-rvnav="list" class="${active === 'list' ? 'on' : ''}">レビュー待ち</button>
+      <button data-rvnav="map" class="${active === 'map' ? 'on' : ''}">リポジトリの地図</button>
+    </div>
+    <span class="sp"></span>
+    ${canReview() ? '' : '<span class="chip">閲覧のみ</span>'}
+    <button class="btn sm" id="rvReload">再読み込み</button>
+  </div>`;
+}
+function bindRvNav() {
+  $$('[data-rvnav]', rvEl()).forEach(b => b.onclick = () => { rv.view = b.dataset.rvnav; renderRev(); });
+  const r = $('#rvReload'); if (r) r.onclick = e => guarded(e.currentTarget, async () => {
+    state.plans = null; rv.links = null; rv.loaded = false;
+    if (rv.doc) rv.doc.stale = true;
+    await renderRev(true); toast('最新の状態にしました');
+  });
+}
+async function renderRev(force) {
+  const el = rvEl(); if (!el) return;
+  if (api.demo && !DEMO_PLANS['docs/index.md']) { el.innerHTML = '<div class="empty">デモモードではレビューは使えません。</div>'; return; }
+  try {
+    if (rv.view === 'doc' && rv.doc) return await renderDoc(force);
+    if (rv.view === 'flow') return await renderFlow();
+    if (rv.view === 'map') return await renderMap();
+    if (rv.view === 'folder') return await renderFolder();
+    return await renderList();
+  } catch (e) { console.error(e); el.innerHTML = `${rvNav(rv.view)}<div class="empty">読み込めませんでした：${esc(e.message)}</div>`; bindRvNav(); }
+}
+
+/* ---------- 画面：レビュー待ち一覧 ---------- */
+async function renderList() {
+  const el = rvEl();
+  if (!state.plans || !rv.loaded || !rv.links) el.innerHTML = `${rvNav('list')}<div class="empty">読み込み中…</div>`;
+  await Promise.all([loadPlans(), loadReviewIssues(), loadLinks()]);
+  const filters = ['レビュー待ち', '要修正', '承認済', 'すべて'];
+  let list = state.plans.filter(p => rv.filter === 'すべて' || p.status === rv.filter);
+  const memoCount = p => openCount('videos/' + p.file) + (rv.links.scripts[p.id] ? openCount(rv.links.scripts[p.id]) : 0);
+  if (rv.onlyOpen) list = list.filter(p => memoCount(p) > 0);
+  if (rv.q) list = list.filter(p => (p.id + p.title + p.series).includes(rv.q));
+  const counts = Object.fromEntries(filters.map(f => [f, f === 'すべて' ? state.plans.length : state.plans.filter(p => p.status === f).length]));
+  const totalOpen = Object.keys(rv.byPath).reduce((a, p) => a + openCount(p), 0);
+  el.innerHTML = `${rvNav('list')}
+    <div class="rv-filters">
+      <div class="seg">${filters.map(f => `<button data-flt="${f}" class="${rv.filter === f ? 'on' : ''}">${f}<span class="num">${counts[f]}</span></button>`).join('')}</div>
+      <label class="check"><input type="checkbox" id="rvOnlyOpen" ${rv.onlyOpen ? 'checked' : ''}> 未対応メモあり（全体で${totalOpen}件）</label>
+      <div class="f rv-search"><input id="rvQ" placeholder="番号・タイトルで探す" value="${esc(rv.q)}"></div>
+    </div>
+    <div class="rv-list-wrap">${list.length ? list.map(p => {
+      const sc = rv.links.scripts[p.id], an = rv.links.annken[p.id] || [], mc = memoCount(p);
+      return `<button class="rv-row" data-plan="${esc(p.id)}">
+        <span class="rv-id num">${esc(p.id)}</span>
+        <span class="rv-main"><span class="rv-title">${esc(p.title)}</span>
+          <span class="chips">
+            <span class="chip ${statusChip(p.status)}">${esc(p.status)}</span>
+            ${p.series && p.series !== '—' ? `<span class="chip">${esc(p.series)}</span>` : ''}
+            ${p.publish ? `<span class="chip">公開 ${esc(p.publish)}</span>` : ''}
+            ${sc ? '<span class="chip aqua">台本あり</span>' : ''}
+            ${an.map(a => `<span class="chip warn">案件 ${esc(a)}</span>`).join('')}
+          </span></span>
+        <span class="rv-count ${mc ? 'has' : ''}">${mc ? `未対応<br><b class="num">${mc}</b>` : ''}</span>
+      </button>`;
+    }).join('') : '<div class="empty">該当する企画はありません。</div>'}</div>`;
+  bindRvNav();
+  $$('[data-flt]', el).forEach(b => b.onclick = () => { rv.filter = b.dataset.flt; renderList(); });
+  $('#rvOnlyOpen').onchange = e => { rv.onlyOpen = e.target.checked; renderList(); };
+  $('#rvQ').oninput = e => { rv.q = e.target.value.trim(); clearTimeout(renderList._t); renderList._t = setTimeout(() => { renderList().then(() => { const q = $('#rvQ'); q.focus(); q.setSelectionRange(q.value.length, q.value.length); }); }, 300); };
+  $$('[data-plan]', el).forEach(b => b.onclick = () => { const p = state.plans.find(x => x.id === b.dataset.plan); openDoc('videos/' + p.file); });
+}
+function statusChip(s) { return { 'レビュー待ち': 'warn', '要修正': 'bad', '承認済': 'ok', '公開': 'aqua', 'ボツ': '' }[s] || ''; }
+
+/* ---------- 画面：書類ビュー ---------- */
+async function openDoc(path, opts = {}) {
+  rv.doc = { path, focusLine: opts.line || null };
+  rv.view = 'doc'; rv.planId = planIdOf(path) || rv.planId;
+  await renderRev(true);
+  window.scrollTo({ top: 0 });
+}
+async function renderDoc(force) {
+  const el = rvEl(), d = rv.doc, path = d.path;
+  if (force || !d.text || d.stale) {
+    el.innerHTML = `${rvNav('')}<div class="empty">読み込み中…</div>`; bindRvNav();
+    const [f] = await Promise.all([api.readFile(path), loadReviewIssues(), loadLinks(), loadPlans()]);
+    if (!f) throw new Error(`${path} が見つかりません`);
+    d.text = f.text; d.sha = f.sha; d.stale = false;
+    if (path.endsWith('.html')) { await loadTemplateCss(); const r = prepareHtmlDoc(d.text); d.html = r.html; d.blocks = r.blocks; d.kind = 'html'; }
+    else if (path.endsWith('.md')) { d.blocks = parseMarkdown(d.text, path); d.kind = 'md'; }
+    else { d.blocks = []; d.kind = 'raw'; }
+  }
+  const info = rv.byPath[path] || { notes: [], replies: [], reverts: [] };
+  const { map, lost } = attachNotes(d.blocks, info.notes);
+  const memo = canMemo(path), pid = planIdOf(path);
+  const plan = pid && state.plans?.find(p => p.id === pid);
+  const isPlan = /^videos\//.test(path);
+  const fmStatus = isPlan ? (/^status:\s*([^#\n]*)/m.exec(d.text) || [])[1]?.trim() : null;
+  const undo = undoInfo(path);
+  const related = relatedDocs(pid);
+  const openN = info.notes.filter(n => n.status !== 'done').length;
+  const url = api.fileUrl(path);
+  el.innerHTML = `${rvNav('')}
+    <div class="rv-doc-head">
+      <button class="btn sm" id="rvBack">‹ 一覧へ</button>
+      <div class="rv-doc-title"><div class="note">${esc(docKind(path))}　<code>${esc(path)}</code></div>
+        <h2>${esc(plan ? `${plan.id} ${plan.title}` : path.split('/').pop())}</h2>${plan && !isPlan ? `<div class="note">${esc(path.split('/').pop())}</div>` : ''}</div>
+      <div class="rv-doc-acts">
+        ${fmStatus ? `<span class="chip ${statusChip(fmStatus)}">${esc(fmStatus)}</span>` : ''}
+        ${pid ? '<button class="btn sm" id="rvFlow">つながりを見る</button>' : ''}
+        ${url ? `<a class="btn sm" href="${url}" target="_blank" rel="noopener">GitHub</a>` : ''}
+      </div>
+    </div>
+    ${related.length > 1 ? `<div class="rv-related">${related.map(r => `<button class="chip ${r.path === path ? 'aqua' : ''}" data-open="${esc(r.path)}">${esc(r.label)}${openCount(r.path) ? ` ・未対応${openCount(r.path)}` : ''}</button>`).join('')}</div>` : ''}
+    ${isPlan && canReview() ? `<div class="rv-judge"><span class="note">採否：</span>
+        <button class="btn ok sm" data-judge="承認済">承認</button>
+        <button class="btn sm" data-judge="要修正">要修正</button>
+        <button class="btn danger sm" data-judge="ボツ">ボツ</button></div>` : ''}
+    ${undo && canReview() ? `<div class="rv-undo"><span>${fmtJPFull(new Date(undo.at))}に Claude がメモを反映しました。${undo.summary ? esc(undo.summary) : ''}</span><button class="btn sm" id="rvUndo">元に戻す</button></div>` : ''}
+    <details class="rv-notes" ${openN ? 'open' : ''}><summary>この書類のメモ　未対応 <b class="num">${openN}</b> ／ 全 ${info.notes.length}件${info.replies.length ? `　・Claude の返信 ${info.replies.length}件` : ''}</summary>
+      ${info.notes.length || info.replies.length ? timeline(info, path) : `<div class="note" style="padding:8px 0">${memo ? 'まだメモはありません。直したい箇所をタップすると書き込めます。' : 'この書類は閲覧のみです。'}</div>`}
+      ${lost.length ? `<div class="note" style="color:var(--warn);margin-top:6px">場所が見つからないメモが${lost.length}件あります（書類が書き換わったため）。上の一覧から内容を確認できます。</div>` : ''}
+      ${rv.byPath[path]?.issue?.html_url && !api.demo ? `<a class="note" href="${rv.byPath[path].issue.html_url}" target="_blank" rel="noopener">GitHub の Issue で見る</a>` : ''}
+    </details>
+    ${memo ? '<div class="note rv-hint">直したい箇所（項目・表の行・段落）をタップすると、修正メモを書けます。</div>' : `<div class="note rv-hint">${canReview() ? 'この書類にはメモを付けられません（閲覧のみ）。' : '閲覧のみです。'}</div>`}
+    <div class="rv-body ${d.kind === 'html' ? 'rv-html' : ''}" id="rvBody">${d.kind === 'md' ? renderMarkdownBlocks(d.blocks) : d.kind === 'raw' ? `<pre>${esc(d.text)}</pre>` : ''}</div>`;
+  let root = $('#rvBody');
+  if (d.kind === 'html') {
+    const sh = root.attachShadow ? root.attachShadow({ mode: 'open' }) : root;
+    sh.innerHTML = `<style>${rv.tplCss || ''}\n${RV_SHADOW_CSS}</style><div class="rv-html-page">${d.html}</div>`;
+    root = sh;
+  }
+  for (const [idx, ns] of Object.entries(map)) {
+    const node = root.querySelector(`[data-b="${idx}"]`); if (!node) continue;
+    const open = ns.filter(n => n.status !== 'done').length;
+    node.classList.add(open ? 'has-note' : 'has-done'); node.setAttribute('data-count', open || '✓');
+  }
+  root.addEventListener('click', e => {
+    const a = e.target.closest('[data-open]'); if (a) { e.preventDefault(); openDoc(a.dataset.open); return; }
+    if (e.target.closest('a')) return;
+    const b = e.target.closest('[data-b]'); if (b) openNoteSheet(+b.dataset.b, map[b.dataset.b] || []);
+  });
+  root.addEventListener('keydown', e => { if (e.key === 'Enter') { const b = e.target.closest?.('[data-b]'); if (b) openNoteSheet(+b.dataset.b, map[b.dataset.b] || []); } });
+  bindRvNav();
+  $('#rvBack').onclick = () => { rv.view = 'list'; rv.doc = null; renderRev(); };
+  const fl = $('#rvFlow'); if (fl) fl.onclick = () => { rv.planId = pid; rv.view = 'flow'; renderRev(); };
+  $$('.rv-related [data-open], .rv-notes [data-open]', el).forEach(b => b.onclick = e => { e.preventDefault(); openDoc(b.dataset.open); });
+  $$('[data-judge]', el).forEach(b => b.onclick = () => judgePlan(path, b.dataset.judge));
+  const u = $('#rvUndo'); if (u) u.onclick = e => undoClaude(path, undo, e.currentTarget);
+  $$('[data-note-toggle]', el).forEach(b => b.onclick = e => guarded(e.currentTarget, async () => {
+    const n = info.notes.find(x => String(x.id) === b.dataset.noteToggle);
+    await setNoteStatus(path, n, n.status === 'done' ? 'open' : 'done'); renderDoc();
+  }));
+  $$('[data-jump]', el).forEach(b => b.onclick = () => {
+    const node = root.querySelector(`[data-b="${b.dataset.jump}"]`);
+    if (node) { node.scrollIntoView({ behavior: 'smooth', block: 'center' }); node.classList.add('flash'); setTimeout(() => node.classList.remove('flash'), 1500); }
+  });
+  if (d.focusLine) { const t = d.blocks.find(x => x.line >= d.focusLine); d.focusLine = null; if (t) setTimeout(() => root.querySelector(`[data-b="${t.idx}"]`)?.scrollIntoView({ block: 'center' }), 50); }
+}
+function timeline(info, path) {
+  const items = [
+    ...info.notes.map(n => ({ t: 'note', at: n.at, n })),
+    ...info.replies.map(r => ({ t: 'reply', at: r.at, r })),
+    ...info.reverts.map(v => ({ t: 'revert', at: v.at, v }))
+  ].sort((a, b) => a.at.localeCompare(b.at));
+  const blocks = rv.doc?.blocks || [];
+  const { map } = attachNotes(blocks, info.notes);
+  const where = {}; for (const [idx, ns] of Object.entries(map)) ns.forEach(n => where[n.id] = idx);
+  return `<div class="timeline">${items.map(it => {
+    const when = new Date(it.at).toLocaleString('ja-JP', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+    if (it.t === 'note') {
+      const n = it.n, k = NOTE_KINDS[n.kind] || NOTE_KINDS.rewrite;
+      return `<div class="tl ${n.status === 'done' ? 'done' : ''}"><div class="by">${k.icon} ${k.label}・${esc(memberName(n.by))}・${when}　<span class="chip ${n.status === 'done' ? 'ok' : 'warn'}">${n.status === 'done' ? '対応済' : '未対応'}</span></div>
+        <div class="rv-q">${esc(n.anchor?.label ? `『${n.anchor.label}』 ` : '')}${esc((n.anchor?.quote || '').slice(0, 80))}</div>
+        <div class="body">${linkify(n.text)}</div>
+        <div class="row" style="gap:6px;margin-top:4px">${where[n.id] != null ? `<button class="btn sm" data-jump="${where[n.id]}">場所を見る</button>` : ''}${canReview() ? `<button class="btn sm" data-note-toggle="${n.id}">${n.status === 'done' ? '未対応に戻す' : '対応済にする'}</button>` : ''}</div></div>`;
+    }
+    if (it.t === 'reply') return `<div class="tl claude"><div class="by">🤖 Claude の返信・${when}</div><div class="body">${linkify(it.r.text.slice(0, 1200))}</div></div>`;
+    return `<div class="tl"><div class="by">↩︎ ${esc(memberName(it.v.by))} が Claude の修正を元に戻しました・${when}</div></div>`;
+  }).join('')}</div>`;
+}
+function relatedDocs(pid) {
+  if (!pid || !rv.links) return [];
+  const out = [];
+  const plan = state.plans?.find(p => p.id === pid);
+  if (plan) out.push({ label: '企画書', path: 'videos/' + plan.file });
+  if (rv.links.scripts[pid]) out.push({ label: '台本', path: rv.links.scripts[pid] });
+  for (const dir of rv.links.annken[pid] || []) for (const f of ANNKEN_MEMO_FILES) out.push({ label: `${dir}／${f.replace('.md', '')}`, path: `annken/${dir}/${f}` });
+  return out;
+}
+
+/* ---------- メモ欄（下から開くシート） ---------- */
+function openNoteSheet(idx, notes) {
+  const d = rv.doc, b = d.blocks[idx]; if (!b) return;
+  const memo = canMemo(d.path);
+  rv.sheet = { idx };
+  openModal(`<div class="head"><div><div class="note">${esc(b.label || '')}${b.line ? `　${b.line}行目付近` : ''}</div><h2>${memo ? '修正メモ' : 'メモ'}</h2></div><span class="sp"></span><button class="btn sm" data-close>閉じる</button></div>
+    <div class="rv-sheet-quote">${esc(b.quote.slice(0, 300))}</div>
+    ${notes.length ? `<div class="sec-title">この箇所のメモ</div>${notes.map(n => { const k = NOTE_KINDS[n.kind] || NOTE_KINDS.rewrite; return `<div class="rv-existing ${n.status === 'done' ? 'done' : ''}"><div class="note">${k.icon} ${k.label}・${esc(memberName(n.by))}・${n.status === 'done' ? '対応済' : '未対応'}</div><div>${linkify(n.text)}</div></div>`; }).join('')}` : ''}
+    ${memo ? `<div class="sec-title">新しいメモ</div>
+      <div class="radio rv-kinds">${Object.entries(NOTE_KINDS).map(([k, v], i) => `<label><input type="radio" name="rvKind" value="${k}" ${i === 0 ? 'checked' : ''}> ${v.icon} ${v.label}</label>`).join('')}</div>
+      <div class="f" style="margin-top:8px"><label for="rvText">どう直してほしいか・聞きたいこと</label><textarea id="rvText" style="min-height:120px" placeholder="例：視聴後の一言を、もっと短く言い切る形にしたい"></textarea></div>
+      <div class="note" style="margin-top:6px">Claude がメモを反映するときに読みます。質問・事実確認でも、直すべき内容なら直しまでします（あとから元に戻せます）。</div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px"><button class="btn" data-close>キャンセル</button><button class="btn pri" id="rvSave">メモを保存</button></div>` : ''}`);
+  $$('[data-close]', $('#sheet')).forEach(x => x.onclick = closeModal);
+  const save = $('#rvSave'); if (save) save.onclick = e => guarded(e.currentTarget, async () => {
+    const text = $('#rvText').value.trim(); if (!text) return toast('メモを入力してください', true);
+    const kind = $$('input[name=rvKind]').find(r => r.checked).value;
+    await addNote(d.path, { line: b.line, quote: b.quote.slice(0, 300), label: b.label || '', idx }, kind, text);
+    closeModal(); toast('メモを保存しました'); renderDoc();
+  });
+  setTimeout(() => $('#rvText')?.focus(), 50);
+}
+
+/* ---------- 採否（企画書のフロントマターと ## コメント） ---------- */
+function setFrontmatter(text, key, value) {
+  const end = text.indexOf('\n---', 3); if (!text.startsWith('---') || end < 0) throw new Error('フロントマターが見つかりません');
+  const head = text.slice(0, end), rest = text.slice(end);
+  const re = new RegExp(`^${key}:[^\\n]*$`, 'm');
+  if (!re.test(head)) return head + `\n${key}: ${value}` + rest;
+  return head.replace(re, ln => {
+    const ci = ln.search(/\s#/); const comment = ci >= 0 ? ln.slice(ci).trimStart() : '';
+    let out = `${key}: ${value}`;
+    if (comment) out += ' '.repeat(Math.max(2, ci + 1 - out.length)) + comment;
+    return out;
+  }) + rest;
+}
+function appendComment(text, line) {
+  const lines = text.split('\n'); const i = lines.findIndex(l => /^##\s+コメント\s*$/.test(l));
+  if (i < 0) return text.replace(/\s*$/, '') + `\n\n## コメント\n\n${line}\n`;
+  let j = lines.findIndex((l, k) => k > i && /^##\s/.test(l)); if (j < 0) j = lines.length;
+  let k = j - 1; while (k > i && !lines[k].trim()) k--;
+  lines.splice(k + 1, 0, ...(k === i ? ['', line] : [line]));
+  return lines.join('\n');
+}
+async function judgePlan(path, status) {
+  const needReason = status !== '承認済';
+  const pid = planIdOf(path);
+  openModal(`<div class="head"><h2>${status === '承認済' ? '承認する' : status === '要修正' ? '要修正にする' : 'ボツにする'}</h2><span class="sp"></span><button class="btn sm" data-close>閉じる</button></div>
+    <p class="note" style="font-size:13px">企画 ${esc(pid || '')} の status を「${status}」にし、判断した人（${esc(me().name)}）と日付（${todayStr()}）を記録します。${needReason ? '理由は企画書の「## コメント」に追記します（必須）。' : ''}</p>
+    ${needReason ? `<div class="f"><label for="jdReason">理由</label><textarea id="jdReason" style="min-height:100px" placeholder="${status === 'ボツ' ? '例：025 と内容が重なるため' : '例：構成の章3が長すぎる。2つに分けたい'}"></textarea></div>` : `<div class="f"><label for="jdReason">ひとこと（任意・コメントに残ります）</label><input id="jdReason"></div>`}
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px"><button class="btn" data-close>キャンセル</button><button class="btn ${status === 'ボツ' ? 'danger' : 'pri'}" id="jdOk">${status === '承認済' ? '承認する' : '確定する'}</button></div>`);
+  $$('[data-close]', $('#sheet')).forEach(x => x.onclick = closeModal);
+  $('#jdOk').onclick = e => guarded(e.currentTarget, async () => {
+    const reason = $('#jdReason').value.trim();
+    if (needReason && !reason) return toast('理由を入力してください', true);
+    for (let tries = 0; tries < 3; tries++) {
+      const f = await api.readFile(path);
+      const prev = (/^status:\s*([^#\n]*)/m.exec(f.text) || [])[1]?.trim() || '';
+      let t = setFrontmatter(f.text, 'status', status);
+      t = setFrontmatter(t, 'reviewer', me().name);
+      t = setFrontmatter(t, 'reviewed_on', todayStr());
+      if (reason) t = appendComment(t, `- ${todayStr()} ${me().name}：${status === '承認済' ? '' : `【${status}】`}${reason.replace(/\n+/g, ' ')}`);
+      try {
+        await api.writeText(path, t, f.sha, `review: ${pid} 判断した（status: ${prev || '—'} → ${status}）（${me().name}）`);
+        const p = state.plans?.find(x => x.id === pid); if (p) p.status = status;
+        closeModal(); toast(`「${status}」にしました`); rv.doc.stale = true; await renderDoc(true); return;
+      } catch (err) { if (err.status !== 409 && err.status !== 422) throw err; }
+    }
+    throw new Error('他の人の更新と競合しました。開き直してからもう一度お試しください');
+  });
+}
+
+/* ---------- 元に戻す（直前の1回分） ---------- */
+function undoInfo(path) {
+  const d = rv.byPath[path]; if (!d) return null;
+  const last = [...d.replies].filter(r => r.undo && r.before && (r.paths || [r.path]).includes(path)).sort((a, b) => b.at.localeCompare(a.at))[0];
+  if (!last) return null;
+  if (d.reverts.some(v => v.of === last.id)) return null;
+  return last;
+}
+async function undoClaude(path, info, btn) {
+  let warn = '';
+  try { const latest = await api.lastCommitFor(path); if (latest && info.commit && !latest.startsWith(info.commit.slice(0, 7))) warn = 'Claude の修正のあとに、別の変更（採否など）が入っています。元に戻すと、その変更も消えます。'; } catch {}
+  openModal(`<div class="head"><h2>Claude の修正を元に戻す</h2><span class="sp"></span><button class="btn sm" data-close>閉じる</button></div>
+    <p style="font-size:13px">${fmtJPFull(new Date(info.at))}に Claude が反映する前の内容に戻します。対応したメモは「未対応」に戻ります。</p>
+    ${warn ? `<p class="note" style="color:var(--bad)">${esc(warn)}</p>` : ''}
+    <p class="note">戻せるのは直前の1回分だけです。Git の履歴には両方の版が残ります。</p>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px"><button class="btn" data-close>キャンセル</button><button class="btn danger" id="udOk">元に戻す</button></div>`);
+  $$('[data-close]', $('#sheet')).forEach(x => x.onclick = closeModal);
+  $('#udOk').onclick = e => guarded(e.currentTarget, async () => {
+    const old = await api.readTextAt(path, info.before);
+    if (old == null) throw new Error('修正前の版が見つかりませんでした');
+    const cur = await api.readFile(path);
+    const res = await api.writeText(path, old, cur.sha, `revert: ${planIdOf(path) || path} Claude の修正を取り消した（${me().name}）`);
+    const d = rv.byPath[path];
+    await api.addComment(d.issue.number, `${metaBlock('fy-revert', { of: info.id, by: me().id, commit: res?.commit?.sha || '' })}\n↩︎ **${me().name}** が ${fmtJPFull(new Date(info.at))} の Claude の修正を元に戻しました。${path.startsWith('daihon/html/') ? '\n台本PDFは次回の反映時に作り直します。' : ''}`);
+    for (const id of info.notes || []) { const n = d.notes.find(x => x.id === id); if (n && n.status === 'done') await setNoteStatus(path, n, 'open'); }
+    await refreshDocNotes(path);
+    closeModal(); toast('元に戻しました'); rv.doc.stale = true; await renderDoc(true);
+  });
+}
+
+/* ---------- 画面：動画1本のつながり ---------- */
+async function renderFlow() {
+  const el = rvEl(), pid = rv.planId;
+  await Promise.all([loadPlans(), loadLinks(), loadReviewIssues()]);
+  const plan = state.plans.find(p => p.id === pid);
+  if (!plan) { rv.view = 'list'; return renderList(); }
+  const sc = rv.links.scripts[pid], pdf = rv.links.pdfs[pid], an = rv.links.annken[pid] || [];
+  const orders = state.issues.filter(i => i.meta.planId === pid);
+  const step = (title, ok, body) => `<div class="rv-step ${ok ? 'ok' : ''}"><div class="rv-dot"></div><div class="rv-step-body"><div class="rv-step-title">${title}</div>${body}</div></div>`;
+  const docBtn = (p, label) => `<button class="btn sm" data-open="${esc(p)}">${esc(label)}${openCount(p) ? `（未対応${openCount(p)}）` : ''}</button>`;
+  el.innerHTML = `${rvNav('')}
+    <div class="rv-doc-head"><button class="btn sm" id="rvBack">‹ 戻る</button><div class="rv-doc-title"><div class="note">動画1本のつながり</div><h2>${esc(plan.id)} ${esc(plan.title)}</h2></div></div>
+    <div class="rv-flow">
+      ${step('企画', true, `<div class="chips"><span class="chip ${statusChip(plan.status)}">${esc(plan.status)}</span>${plan.series ? `<span class="chip">${esc(plan.series)}</span>` : ''}<span class="chip">${esc(plan.length)}</span></div><div class="row">${docBtn('videos/' + plan.file, '企画書を開く')}</div><div class="note"><code>videos/${esc(plan.file)}</code></div>`)}
+      ${step('台本', !!sc, sc ? `<div class="row">${docBtn(sc, '台本を開く')}${pdf && api.fileUrl(pdf) ? `<a class="btn sm" href="${api.fileUrl(pdf)}" target="_blank" rel="noopener">PDF</a>` : ''}</div><div class="note"><code>${esc(sc)}</code></div>` : `<div class="note">まだありません（承認後に youtube-script スキルで書く）${pdf ? `。旧形式の PDF はあります` : ''}</div>`)}
+      ${step('案件（タイアップ）', an.length > 0, an.length ? an.map(dir => `<div class="rv-annken"><b>${esc(dir)}</b><div class="row">${ANNKEN_MEMO_FILES.map(f => docBtn(`annken/${dir}/${f}`, f.replace('.md', ''))).join('')}${docBtn(`annken/${dir}/やりとり.md`, 'やりとり（閲覧）')}</div></div>`).join('') : '<div class="note">紐づく案件はありません</div>')}
+      ${step('編集発注', orders.length > 0, orders.length ? orders.map(o => `<div class="row"><span class="chip aqua">${esc(ST[o.status].label)}</span><span>#${o.number} ${esc(o.title)}</span>${o.meta.due ? `<span class="note">納期 ${esc(o.meta.due)}</span>` : ''}</div>`).join('') + '<div class="note">「動画納品管理」タブで詳細を見られます</div>' : '<div class="note">まだ発注していません</div>')}
+      ${step('公開', plan.status === '公開', `<div class="note">${plan.publish ? `公開予定 ${esc(plan.publish)}` : '公開日は未定'}${plan.status === '公開' ? '（公開済）' : ''}</div>`)}
+    </div>`;
+  bindRvNav();
+  $('#rvBack').onclick = () => { rv.view = rv.doc ? 'doc' : 'list'; renderRev(); };
+  $$('[data-open]', el).forEach(b => b.onclick = () => openDoc(b.dataset.open));
+}
+
+/* ---------- 画面：リポジトリの地図 ---------- */
+const REPO_MAP = [
+  { group: '人が書くもの（入力）', items: [
+    { path: 'videos', name: '企画書', desc: '動画1本＝1ファイル。冒頭のフロントマターが唯一の構造化データ。ここから一覧が自動で作られる', memo: true },
+    { path: 'daihon/html', name: '台本', desc: '台本の本文（現行）。youtube-script スキルで書く。PDF は自動生成', memo: true },
+    { path: 'annken', name: '案件', desc: '企業案件。1案件＝1フォルダ。企画提案書が先方との約束', memo: true },
+    { path: 'apps', name: 'アプリ100個企画', desc: 'アプリ案のバックログと方針' },
+    { path: 'plan', name: '運営計画書', desc: '規格の出どころ。このリポジトリの上位文書' },
+    { path: 'manual', name: 'マニュアル', desc: '外注に渡す文書（編集マニュアル・接続マニュアル）' },
+    { path: 'templates', name: 'ひな形', desc: '新しい企画・台本のひな形' }
+  ] },
+  { group: '自動で作られるもの（触らない）', items: [
+    { path: 'docs', name: '一覧・進行状況', desc: '企画書のフロントマターから build.py が作る。公開カレンダー・カバレッジ表など' },
+    { path: 'daihon/pdf', name: '台本PDF', desc: '台本の本文から作る PDF' },
+    { path: 'manual/pdf', name: 'マニュアルPDF', desc: 'manual/ の Markdown から作る PDF' },
+    { path: 'seisaku', name: '制作室のデータ', desc: '稼働記録・請求書PDF・共有設定（制作室ツールが書き込む）' }
+  ] },
+  { group: '仕組み', items: [
+    { path: 'scripts', name: 'スクリプト', desc: '検証と一覧生成（build.py）、PDF 化、Issue からの起票' },
+    { path: 'tools', name: 'ツール', desc: 'この制作室ツール本体' },
+    { path: 'daihon', name: '旧形式の台本', desc: '2026年8月までの台本（.md）。過去の資産として残す' }
+  ] }
+];
+async function renderMap() {
+  const el = rvEl();
+  el.innerHTML = `${rvNav('map')}
+    <div class="card" style="margin-bottom:16px"><h2>動画1本ができるまで</h2>
+      <div class="rv-pipeline">
+        ${[['ネタ', 'Issue のフォーム'], ['企画書', 'videos/'], ['レビュー', 'このタブで採否'], ['台本', 'daihon/html/'], ['案件', 'annken/（タイアップのみ）'], ['撮影・編集発注', '動画納品管理タブ'], ['公開', 'docs/calendar.md']].map(([a, b], i, arr) => `<div class="rv-pipe"><b>${a}</b><span class="note">${b}</span></div>${i < arr.length - 1 ? '<span class="rv-arrow">→</span>' : ''}`).join('')}
+      </div>
+      <div class="note" style="margin-top:8px">企画書の status（ネタ → 下書き → レビュー待ち → 承認済 → 撮影 → 編集 → 公開）で進み具合を表します。一覧は企画書から自動で作られます。</div>
+    </div>
+    ${REPO_MAP.map(g => `<div class="sec-title">${g.group}</div><div class="rv-map">${g.items.map(it => `<button class="rv-folder" data-folder="${it.path}"><span class="rv-fname"><code>${it.path}/</code>　${it.name}${it.memo ? '<span class="chip aqua">メモ可</span>' : ''}</span><span class="note">${it.desc}</span></button>`).join('')}</div>`).join('')}`;
+  bindRvNav();
+  $$('[data-folder]', el).forEach(b => b.onclick = () => { rv.folder = b.dataset.folder; rv.view = 'folder'; renderRev(); });
+}
+async function renderFolder() {
+  const el = rvEl(), dir = rv.folder;
+  el.innerHTML = `${rvNav('map')}<div class="empty">読み込み中…</div>`; bindRvNav();
+  const items = await api.listDir(dir);
+  items.sort((a, b) => (a.type === b.type ? a.name.localeCompare(b.name, 'ja') : a.type === 'dir' ? -1 : 1));
+  const up = dir.includes('/') ? dir.slice(0, dir.lastIndexOf('/')) : '';
+  el.innerHTML = `${rvNav('map')}
+    <div class="rv-doc-head"><button class="btn sm" id="rvUp">‹ ${up ? esc(up) + '/' : '地図'}</button><div class="rv-doc-title"><div class="note">フォルダ</div><h2><code>${esc(dir)}/</code></h2></div></div>
+    <div class="rv-map">${items.map(it => {
+      const p = `${dir}/${it.name}`;
+      if (it.type === 'dir') return `<button class="rv-folder" data-sub="${esc(p)}"><span class="rv-fname">📁 ${esc(it.name)}/</span></button>`;
+      const viewable = /\.(md|html|yml|yaml|json|txt|py|csv)$/.test(it.name);
+      return `<button class="rv-folder" ${viewable ? `data-open="${esc(p)}"` : `data-gh="${esc(p)}"`}><span class="rv-fname">${esc(it.name)}${canMemo(p) ? '<span class="chip aqua">メモ可</span>' : ''}${openCount(p) ? `<span class="chip warn">未対応${openCount(p)}</span>` : ''}</span>${viewable ? '' : '<span class="note">GitHub で開く</span>'}</button>`;
+    }).join('') || '<div class="empty">空のフォルダです</div>'}</div>`;
+  bindRvNav();
+  $('#rvUp').onclick = () => { if (up) { rv.folder = up; renderFolder(); } else { rv.view = 'map'; renderRev(); } };
+  $$('[data-sub]', el).forEach(b => b.onclick = () => { rv.folder = b.dataset.sub; renderFolder(); });
+  $$('[data-open]', el).forEach(b => b.onclick = () => openDoc(b.dataset.open));
+  $$('[data-gh]', el).forEach(b => b.onclick = () => { const u = api.fileUrl(b.dataset.gh); if (!u) return; if (IS_IOS && linkMode() === 'chrome') location.href = chromeUrl(u); else window.open(u, '_blank', 'noopener'); });
+}
+
 /* =========================================================
    起動
    ========================================================= */
 function setTab(t) {
   state.tab = t; LS.set('fy_tab', t);
   $$('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
-  $('#tab-att').classList.toggle('hide', t !== 'att'); $('#tab-vid').classList.toggle('hide', t !== 'vid');
-  t === 'att' ? renderAtt() : renderVid();
+  $('#tab-att').classList.toggle('hide', t !== 'att'); $('#tab-vid').classList.toggle('hide', t !== 'vid'); $('#tab-rev').classList.toggle('hide', t !== 'rev');
+  t === 'att' ? renderAtt() : t === 'vid' ? renderVid() : renderRev();
 }
 $$('.tabs button').forEach(b => b.onclick = () => setTab(b.dataset.tab));
 

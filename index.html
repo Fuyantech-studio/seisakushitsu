@@ -33,9 +33,65 @@ header.top{position:sticky;top:0;padding-top:env(safe-area-inset-top,0px);z-inde
 .brand .mark{width:34px;height:34px;border-radius:10px;background:var(--aqua);display:grid;place-items:center;flex:none}
 .brand h1{font-family:"Zen Maru Gothic","Noto Sans JP",sans-serif;font-size:17px;margin:0;line-height:1.2}
 .brand small{display:block;color:var(--ink-3);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tabs{display:flex;background:var(--tile);border-radius:12px;padding:4px;gap:4px}
-.tabs button{border:0;background:transparent;padding:8px 16px;border-radius:9px;cursor:pointer;font-weight:500;color:var(--ink-2)}
-.tabs button.on{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+/* 画面切り替え：制作の流れ（1→3）をそのままナビにする。稼働・請求は裏方として右端に分ける */
+.line{border-top:1px solid var(--line)}
+.line-in{max-width:1180px;margin:0 auto;padding:0 16px;display:flex;align-items:stretch;gap:6px;overflow-x:auto;scrollbar-width:none}
+.line-in::-webkit-scrollbar{display:none}
+.line button{border:0;background:transparent;cursor:pointer;font-weight:500;color:var(--ink-2);padding:11px 10px 9px;border-bottom:3px solid transparent;display:inline-flex;align-items:center;gap:7px;white-space:nowrap;font-size:14px}
+.line button:hover{color:var(--ink)}
+.line button.on{color:var(--ink);border-bottom-color:var(--aqua);font-weight:700}
+.line-steps{display:flex;align-items:center;gap:2px}
+.chev{width:22px;height:2px;background:var(--line);position:relative;flex:none}
+.chev:after{content:"";position:absolute;right:-1px;top:-3px;border:4px solid transparent;border-left-color:var(--line);border-right:0}
+.line-home{margin-right:6px}
+.line-aside{margin-left:auto;border-left:1px solid var(--line)!important;padding-left:16px!important}
+.badge{font-size:11px;font-weight:700;background:var(--tile);color:var(--ink-2);border-radius:99px;padding:0 7px;line-height:18px;font-variant-numeric:tabular-nums}
+.badge:empty{display:none}
+.badge.hot{background:var(--bad);color:#fff}
+/* ホーム */
+.home-line{margin-bottom:16px}
+.home-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.home-h h2{margin:0;font-size:18px;font-family:"Zen Maru Gothic",sans-serif}
+.ln-track{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+.ln-stage{position:relative;text-align:left;background:transparent;border:0;border-right:1px solid var(--line);padding:14px 16px 16px 16px;cursor:pointer;display:flex;flex-direction:column;gap:6px;min-width:0}
+.ln-stage:last-child{border-right:0}
+.ln-stage:not(:last-child):after{content:"";position:absolute;right:-7px;top:50%;width:12px;height:12px;background:var(--card);border-top:1px solid var(--line);border-right:1px solid var(--line);transform:translateY(-50%) rotate(45deg);z-index:1}
+.ln-stage:hover{background:var(--aqua-2)}
+.ln-stage:hover:after{background:var(--aqua-2)}
+.ln-head{display:flex;align-items:center;gap:7px;font-weight:700;font-size:13px;color:var(--ink-2)}
+.ln-no{width:20px;height:20px;border-radius:50%;background:var(--ink);color:#fff;display:inline-grid;place-items:center;font-size:11px;flex:none}
+.ln-big{display:flex;align-items:baseline;gap:4px}
+.ln-big b{font-size:30px;line-height:1.1;font-family:"Zen Maru Gothic",sans-serif}
+.ln-big small{font-size:12px;color:var(--ink-3)}
+.ln-lines{display:flex;flex-direction:column;font-size:12px;color:var(--ink-2);min-height:36px}
+.home-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px;margin-bottom:16px}
+.td-list,.up-list{display:flex;flex-direction:column}
+.td{display:grid;grid-template-columns:64px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--tile)}
+.td:first-child{border-top:0}
+.td-lvl{font-size:11px;font-weight:700;border-radius:99px;text-align:center;padding:2px 0}
+.td-now .td-lvl{background:var(--bad-bg);color:var(--bad)}
+.td-soon .td-lvl{background:var(--warn-bg);color:var(--warn)}
+.td-later .td-lvl{background:var(--tile);color:var(--ink-2)}
+.td-text{display:flex;flex-direction:column;line-height:1.5}
+.td-text small{font-size:12px;color:var(--ink-3)}
+.up{display:grid;grid-template-columns:52px minmax(0,1fr);gap:10px;align-items:center;text-align:left;background:transparent;border:0;border-top:1px solid var(--tile);padding:10px 0;cursor:pointer}
+.up:first-child{border-top:0}
+.up:hover .up-title{color:var(--aqua-ink)}
+.up-date{font-size:16px;font-weight:700;color:var(--ink-2)}
+.up-main{display:flex;flex-direction:column;gap:4px;min-width:0}
+.up-title{font-weight:500;line-height:1.45}
+.home-map{width:100%;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;text-align:left;background:var(--card);border:1px dashed var(--ink-3);border-radius:14px;padding:14px 16px;cursor:pointer}
+.home-map:hover{border-color:var(--aqua);border-style:solid}
+/* 稼働・請求：月の流れ */
+.mflow{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--ink-3)}
+.mflow span{padding:2px 9px;border-radius:99px;border:1px solid var(--line);background:var(--card)}
+.mflow span.done{color:var(--ok);border-color:var(--ok-bg);background:var(--ok-bg)}
+.mflow span.cur{color:#fff;background:var(--aqua);border-color:var(--aqua);font-weight:700}
+.mflow i{width:10px;height:1px;background:var(--line)}
+/* 書類画面：読み終えた位置に採否 */
+.rv-judge{position:sticky;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:5;display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 14px;background:var(--card);border:1px solid var(--line);border-radius:14px;margin-top:14px;box-shadow:0 8px 24px rgba(29,42,58,.14)}
+.rv-judge .sp{flex:1}
+.rv-crumb{font-weight:700;font-size:15px}
 .who{display:flex;align-items:center;gap:8px}
 .chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:500;background:var(--tile);color:var(--ink-2);white-space:nowrap}
 .chip.aqua{background:var(--aqua-2);color:var(--aqua-ink)}
@@ -48,7 +104,7 @@ main{max-width:1180px;margin:0 auto;padding:18px 16px 80px}
 .banner button{margin-left:auto}
 .grid{display:grid;gap:16px}
 .g-att{grid-template-columns:minmax(0,1fr) 340px}
-@media (max-width:900px){.g-att{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:900px){.g-att{grid-template-columns:minmax(0,1fr)}.home-grid{grid-template-columns:1fr}.ln-big b{font-size:24px}}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
 .card h2{font-size:15px;margin:0 0 12px;display:flex;align-items:center;gap:8px}
 .card h2 .sp{flex:1}
@@ -172,7 +228,6 @@ table.t tr.ex td{color:var(--ink-3)}
 a.btn{text-decoration:none;color:var(--ink);display:inline-flex;align-items:center}
 .rv-related{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
 .rv-related .chip{cursor:pointer;border:1px solid var(--line)}
-.rv-judge{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 12px;background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:10px}
 .rv-undo{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between;padding:10px 12px;background:var(--warn-bg);color:#6b4a12;border-radius:12px;margin-bottom:10px;font-size:13px}
 .rv-notes{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-bottom:10px}
 .rv-notes summary{cursor:pointer;font-size:13px;color:var(--ink-2)}
@@ -243,8 +298,21 @@ tr.rv-blk.has-note td:first-child,tr.rv-blk.has-note th:first-child{box-shadow:i
   .top-in{gap:10px;padding:10px 12px}
   .brand{flex:1 1 auto}
   .brand small{display:none}
-  .tabs{order:3;flex:1 1 100%}
-  .tabs button{flex:1;padding:9px 8px}
+  .line-in{padding:0 8px;gap:2px}
+  .rv-nav .note{display:none}
+  .rv-judge{padding:8px 10px}.rv-judge>span:first-child{flex:1 1 100%;font-size:13px}
+  .line button{padding:10px 7px 8px;font-size:13px;gap:5px}
+  .chev{width:10px}
+  .ln-track{grid-template-columns:1fr}
+  .ln-stage{border-right:0;border-bottom:1px solid var(--line);flex-direction:row;align-items:center;flex-wrap:wrap;gap:4px 12px;padding:12px 14px}
+  .ln-stage:last-child{border-bottom:0}
+  .ln-stage:not(:last-child):after{right:auto;left:22px;top:auto;bottom:-7px;transform:rotate(135deg)}
+  .ln-head{min-width:110px}
+  .ln-big b{font-size:22px}
+  .ln-lines{min-height:0;flex-direction:row;flex-wrap:wrap;gap:0 10px;flex:1 1 100%;padding-left:27px}
+  .home-grid{grid-template-columns:1fr}
+  .td{grid-template-columns:56px minmax(0,1fr);}
+  .td .btn{grid-column:2;justify-self:start}
   main{padding:14px 12px 80px}
   .card{padding:14px}
   .row .f{flex:1 1 140px;width:auto!important;min-width:0}
@@ -278,11 +346,6 @@ tr.rv-blk.has-note td:first-child,tr.rv-blk.has-note th:first-child{box-shadow:i
         <small id="projName"></small>
       </div>
     </div>
-    <nav class="tabs" role="tablist">
-      <button data-tab="att" class="on">勤務管理</button>
-      <button data-tab="vid">動画納品管理</button>
-      <button data-tab="rev">レビュー</button>
-    </nav>
     <div class="who">
       <span class="chip aqua" id="meChip"></span>
       <button class="iconbtn" id="btnSettings" title="設定" aria-label="設定">
@@ -290,6 +353,19 @@ tr.rv-blk.has-note td:first-child,tr.rv-blk.has-note th:first-child{box-shadow:i
       </button>
     </div>
   </div>
+  <nav class="line" role="tablist" aria-label="画面の切り替え">
+    <div class="line-in">
+      <button data-tab="home" class="line-home">ホーム</button>
+      <div class="line-steps" aria-label="制作の流れ">
+        <button data-tab="ideas">ネタ帳<span class="badge" id="bd-ideas"></span></button>
+        <span class="chev" aria-hidden="true"></span>
+        <button data-tab="review">企画レビュー<span class="badge" id="bd-review"></span></button>
+        <span class="chev" aria-hidden="true"></span>
+        <button data-tab="vid">編集・納品<span class="badge" id="bd-vid"></span></button>
+      </div>
+      <button data-tab="att" class="line-aside">稼働・請求<span class="badge" id="bd-att"></span></button>
+    </div>
+  </nav>
 </header>
 
 <main>
@@ -297,6 +373,9 @@ tr.rv-blk.has-note td:first-child,tr.rv-blk.has-note th:first-child{box-shadow:i
     <b>デモモード</b>　データはこのブラウザ内だけに保存されています。GitHubと連携すると3人で共有できます。
     <button class="btn sm" id="btnGoSettings">GitHubと連携する</button>
   </div>
+
+  <!-- ========== ホーム ========== -->
+  <section id="tab-home" class="hide"><div id="home"></div></section>
 
   <!-- ========== 勤務管理 ========== -->
   <section id="tab-att">
@@ -846,7 +925,9 @@ function renderAtt() {
   const wl = curWL();
   const stMap = { draft: ['下書き', ''], submitted: ['提出済（承認待ち）', 'warn'], approved: ['承認済', 'ok'] };
   const [sl, sc] = stMap[wl.status] || stMap.draft;
-  $('#wlStatus').innerHTML = `<span class="chip ${sc}">${sl}</span>`;
+  const stepsW = [['draft', '記録中'], ['submitted', '提出済'], ['approved', '承認済']];
+  const ci = Math.max(0, stepsW.findIndex(x => x[0] === wl.status));
+  $('#wlStatus').innerHTML = `<span class="mflow" title="${sl}">${stepsW.map((x, i) => `<span class="${i < ci ? 'done' : i === ci ? 'cur' : ''}">${x[1]}</span>`).join('<i></i>')}</span>`;
 
   // フォーム
   const tCat = $('#tCat'), eCat = $('#eCat');
@@ -1738,13 +1819,12 @@ function attachNotes(blocks, notes) {
 /* ---------- 画面：共通 ---------- */
 function rvEl() { return $('#rv'); }
 function rvNav(active) {
+  if (!active) return '';
+  const crumb = { list: '企画を読んで、メモと採否を付けます', ideas: '思いついたネタをためて、企画にします', map: 'リポジトリの地図' }[active] || '';
   return `<div class="rv-nav">
-    <div class="seg">
-      <button data-rvnav="list" class="${active === 'list' ? 'on' : ''}">レビュー待ち</button>
-      <button data-rvnav="ideas" class="${active === 'ideas' ? 'on' : ''}">ネタ帳</button>
-      <button data-rvnav="map" class="${active === 'map' ? 'on' : ''}">リポジトリの地図</button>
-    </div>
+    ${crumb ? `<span class="${active === 'map' ? 'rv-crumb' : 'note'}">${crumb}</span>` : ''}
     <span class="sp"></span>
+    ${active === 'list' ? '<button class="btn sm" data-rvnav="map">リポジトリの地図</button>' : ''}
     ${canReview() ? '' : '<span class="chip">閲覧のみ</span>'}
     <button class="btn sm" id="rvReload">再読み込み</button>
   </div>`;
@@ -1847,14 +1927,11 @@ async function renderDoc(force) {
       <div class="rv-doc-acts">
         ${fmStatus ? `<span class="chip ${statusChip(fmStatus)}">${esc(fmStatus)}</span>` : ''}
         ${pid ? '<button class="btn sm" id="rvFlow">つながりを見る</button>' : ''}
+        <button class="btn sm" id="rvReload" title="最新の内容を読み込む">再読み込み</button>
         ${url ? `<a class="btn sm" href="${url}" target="_blank" rel="noopener">GitHub</a>` : ''}
       </div>
     </div>
-    ${related.length > 1 ? `<div class="rv-related">${related.map(r => `<button class="chip ${r.path === path ? 'aqua' : ''}" data-open="${esc(r.path)}">${esc(r.label)}${openCount(r.path) ? ` ・未対応${openCount(r.path)}` : ''}</button>`).join('')}</div>` : ''}
-    ${isPlan && canReview() ? `<div class="rv-judge"><span class="note">採否：</span>
-        <button class="btn ok sm" data-judge="承認済">承認</button>
-        <button class="btn sm" data-judge="要修正">要修正</button>
-        <button class="btn danger sm" data-judge="ボツ">ボツ</button></div>` : ''}
+    ${related.length > 1 ? `<div class="rv-related"><span class="note">この動画の書類：</span>${related.map(r => `<button class="chip ${r.path === path ? 'aqua' : ''}" data-open="${esc(r.path)}">${esc(r.label)}${openCount(r.path) ? ` ・未対応${openCount(r.path)}` : ''}</button>`).join('')}</div>` : ''}
     ${undo && canReview() ? `<div class="rv-undo"><span>${fmtJPFull(new Date(undo.at))}に Claude がメモを反映しました。${undo.summary ? esc(undo.summary) : ''}</span><button class="btn sm" id="rvUndo">元に戻す</button></div>` : ''}
     <details class="rv-notes" ${openN ? 'open' : ''}><summary>この書類のメモ　未対応 <b class="num">${openN}</b> ／ 全 ${info.notes.length}件${info.replies.length ? `　・Claude の返信 ${info.replies.length}件` : ''}</summary>
       ${info.notes.length || info.replies.length ? timeline(info, path) : `<div class="note" style="padding:8px 0">${memo ? 'まだメモはありません。直したい箇所をタップすると書き込めます。' : 'この書類は閲覧のみです。'}</div>`}
@@ -1862,7 +1939,11 @@ async function renderDoc(force) {
       ${rv.byPath[path]?.issue?.html_url && !api.demo ? `<a class="note" href="${rv.byPath[path].issue.html_url}" target="_blank" rel="noopener">GitHub の Issue で見る</a>` : ''}
     </details>
     ${memo ? '<div class="note rv-hint">直したい箇所（項目・表の行・段落）をタップすると、修正メモを書けます。</div>' : `<div class="note rv-hint">${canReview() ? 'この書類にはメモを付けられません（閲覧のみ）。' : '閲覧のみです。'}</div>`}
-    <div class="rv-body ${d.kind === 'html' ? 'rv-html' : ''}" id="rvBody">${d.kind === 'md' ? renderMarkdownBlocks(d.blocks) : d.kind === 'raw' ? `<pre>${esc(d.text)}</pre>` : ''}</div>`;
+    <div class="rv-body ${d.kind === 'html' ? 'rv-html' : ''}" id="rvBody">${d.kind === 'md' ? renderMarkdownBlocks(d.blocks) : d.kind === 'raw' ? `<pre>${esc(d.text)}</pre>` : ''}</div>
+    ${isPlan && canReview() ? `<div class="rv-judge"><span>読み終えたら、採否を決めます${openN ? `<span class="note">（未対応メモ ${openN}件。要修正にすると、直してから再レビューになります）</span>` : ''}</span><span class="sp"></span>
+        <button class="btn ok" data-judge="承認済">承認</button>
+        <button class="btn" data-judge="要修正">要修正</button>
+        <button class="btn danger" data-judge="ボツ">ボツ</button></div>` : ''}`;
   let root = $('#rvBody');
   if (d.kind === 'html') {
     const sh = root.attachShadow ? root.attachShadow({ mode: 'open' }) : root;
@@ -2255,13 +2336,135 @@ async function renderFolder() {
 /* =========================================================
    起動
    ========================================================= */
-function setTab(t) {
-  state.tab = t; LS.set('fy_tab', t);
-  $$('.tabs button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
-  $('#tab-att').classList.toggle('hide', t !== 'att'); $('#tab-vid').classList.toggle('hide', t !== 'vid'); $('#tab-rev').classList.toggle('hide', t !== 'rev');
-  t === 'att' ? renderAtt() : t === 'vid' ? renderVid() : renderRev();
+
+/* =========================================================
+   ホーム（制作ライン・あなたのやること・公開予定）
+   ========================================================= */
+const HOME_STAGES = ['ideas', 'review', 'script', 'vid', 'pub'];
+async function renderHome() {
+  const el = $('#home');
+  if (!el.dataset.ready) el.innerHTML = '<div class="empty">読み込み中…</div>';
+  const role = me().role;
+  try {
+    await Promise.all([loadPlans(), loadIdeas(), loadReviewIssues(), loadLinks()]);
+  } catch (e) { el.innerHTML = `<div class="empty">読み込めませんでした：${esc(e.message)}</div>`; return; }
+  el.dataset.ready = '1';
+  const plans = state.plans, today = ymd(new Date());
+  const ideas = rv.ideas || [];
+  const ideaRough = ideas.filter(i => !i.labels.includes('ネタ承認') && ideaMissing(i.v).length);
+  const ideaReady = ideas.filter(i => !i.labels.includes('ネタ承認') && !ideaMissing(i.v).length);
+  const waiting = plans.filter(p => p.status === 'レビュー待ち');
+  const fixing = plans.filter(p => p.status === '要修正');
+  const openMemos = Object.keys(rv.byPath).reduce((a, p) => a + openCount(p), 0);
+  const approved = plans.filter(p => ['承認済', '撮影', '編集'].includes(p.status));
+  const noScript = plans.filter(p => p.status === '承認済' && !rv.links.scripts[p.id]);
+  const orders = state.issues.filter(i => i.status !== 'published');
+  const byStatus = k => orders.filter(i => i.status === k);
+  const upcoming = plans.filter(p => p.publish && p.publish >= today && p.status !== 'ボツ').sort((a, b) => a.publish.localeCompare(b.publish));
+  const undoable = Object.keys(rv.byPath).map(p => ({ path: p, u: undoInfo(p) })).filter(x => x.u);
+  const submitted = Object.values(state.worklogs).filter(w => w.data.status === 'submitted');
+
+  const stage = (key, no, title, big, unit, lines, tab) => `
+    <button class="ln-stage" data-go="${tab}">
+      <span class="ln-head"><span class="ln-no">${no}</span>${title}</span>
+      <span class="ln-big"><b class="num">${big}</b><small>${unit}</small></span>
+      <span class="ln-lines">${lines.filter(Boolean).map(l => `<span>${l}</span>`).join('')}</span>
+    </button>`;
+  const lineHtml = `
+    <div class="ln-track">
+      ${stage('ideas', 1, 'ネタ帳', ideas.length, '件', [ideaReady.length ? `承認できる ${ideaReady.length}` : '', ideaRough.length ? `項目不足 ${ideaRough.length}` : ''], 'ideas')}
+      ${stage('review', 2, '企画レビュー', waiting.length, '本待ち', [openMemos ? `未対応メモ ${openMemos}` : '', fixing.length ? `要修正 ${fixing.length}` : ''], 'review')}
+      ${stage('script', 3, '台本', noScript.length, '本未作成', [`承認済 ${plans.filter(p => p.status === '承認済').length}本`], 'review:承認済')}
+      ${stage('vid', 4, '編集・納品', orders.length, '本進行中', [byStatus('ordered').length ? `承諾待ち ${byStatus('ordered').length}` : '', byStatus('review').length ? `検収待ち ${byStatus('review').length}` : '', byStatus('revising').length ? `修正中 ${byStatus('revising').length}` : ''], 'vid')}
+      ${stage('pub', 5, '公開', upcoming.length, '本予定', [upcoming[0] ? `次は ${fmtMDs(upcoming[0].publish)}` : '予定なし'], 'review:すべて')}
+    </div>`;
+
+  const todo = [];
+  const add = (lvl, text, sub, go, label) => todo.push({ lvl, text, sub, go, label });
+  if (role === 'editor') {
+    const mine = orders.filter(i => i.meta.assignee === me().id);
+    mine.filter(i => i.status === 'ordered').forEach(i => add('now', `発注を確認して承諾する：${i.title}`, i.meta.due ? `納期 ${i.meta.due}` : '', `vid:${i.number}`, '開く'));
+    mine.filter(i => i.status === 'revising').forEach(i => add('now', `修正して再納品する：${i.title}`, '', `vid:${i.number}`, '開く'));
+    mine.filter(i => i.status === 'editing').forEach(i => add('soon', `編集して納品する：${i.title}`, i.meta.due ? `納期 ${i.meta.due}` : '', `vid:${i.number}`, '開く'));
+    const wl = state.worklogs[`${me().id}/${state.month}`]?.data;
+    if (wl && wl.status === 'draft') add('soon', `${Number(state.month.slice(5))}月分の稼働報告を提出する`, `期限 ${fmtJPFull(nextMonthDay(state.month, state.settings.reportDay))}`, 'att', '稼働・請求へ');
+  } else {
+    if (undoable.length) undoable.forEach(x => add('now', `Claude が反映した修正を確認する：${docLabel(x.path)}`, '気に入らなければ「元に戻す」', `doc:${x.path}`, '確認する'));
+    if (byStatus('review').length) byStatus('review').forEach(i => add('now', `納品された動画を検収する：${i.title}`, '7日以内', `vid:${i.number}`, '開く'));
+    if (role === 'owner' && submitted.length) submitted.forEach(w => add('now', `${memberName(w.data.worker)}さんの${Number(w.data.month.slice(5))}月分の稼働報告を承認する`, '', 'att', '稼働・請求へ'));
+    if (ideaReady.length) add('soon', `承認できるネタが ${ideaReady.length}件あります`, '承認すると企画ファイルができます', 'ideas', 'ネタ帳へ');
+    if (waiting.length) add('soon', `企画レビュー待ちが ${waiting.length}本あります`, openMemos ? `未対応メモ ${openMemos}件は今夜 2:48 に Claude が反映します` : '読んでメモを付けるか、採否を決めます', 'review', '企画レビューへ');
+    if (ideaRough.length) add('later', `項目が足りないネタが ${ideaRough.length}件あります`, 'Claude に「ネタを膨らませて」と頼むと埋まります', 'ideas', 'ネタ帳へ');
+    if (noScript.length) add('later', `台本がまだの承認済み企画が ${noScript.length}本あります`, 'Claude に「台本を書いて」と頼みます', 'review:承認済', '一覧へ');
+  }
+  const lvlLabel = { now: '今すぐ', soon: '今週', later: 'いつでも' };
+  const todoHtml = todo.length ? todo.map(t => `
+    <div class="td td-${t.lvl}"><span class="td-lvl">${lvlLabel[t.lvl]}</span>
+      <span class="td-text">${esc(t.text)}${t.sub ? `<small>${esc(t.sub)}</small>` : ''}</span>
+      <button class="btn sm" data-go="${esc(t.go)}">${t.label}</button></div>`).join('')
+    : '<div class="empty" style="padding:16px">今やることはありません。</div>';
+
+  const upHtml = upcoming.slice(0, 6).map(p => {
+    const ord = state.issues.find(i => i.meta.planId === p.id);
+    return `<button class="up" data-go="doc:videos/${esc(p.file)}">
+      <span class="up-date num">${fmtMDs(p.publish)}</span>
+      <span class="up-main"><span class="up-title">${esc(p.id)} ${esc(p.title)}</span>
+        <span class="chips"><span class="chip ${statusChip(p.status)}">${esc(p.status)}</span>${rv.links.scripts[p.id] ? '<span class="chip aqua">台本あり</span>' : '<span class="chip">台本なし</span>'}${ord ? `<span class="chip">${esc(ST[ord.status].label)}</span>` : ''}</span></span>
+    </button>`;
+  }).join('') || '<div class="empty" style="padding:16px">公開日が決まっている企画はありません。</div>';
+
+  el.innerHTML = `
+    <section class="home-line" aria-label="制作ライン">
+      <div class="home-h"><h2>制作ライン</h2><span class="note">動画は 1 → 5 の順に進みます。押すとその工程へ移ります。</span></div>
+      ${lineHtml}
+    </section>
+    <div class="home-grid">
+      <section class="card"><h2>${role === 'editor' ? 'あなたのやること' : 'やること'}<span class="sp"></span><span class="note">${esc(me().name)}さん</span></h2><div class="td-list">${todoHtml}</div></section>
+      <section class="card"><h2>近い公開予定</h2><div class="up-list">${upHtml}</div></section>
+    </div>
+    <button class="home-map" data-go="map"><b>リポジトリの地図</b><span class="note">企画・台本・案件などのフォルダが何のためにあり、どうつながっているか</span></button>`;
+  $$('[data-go]', el).forEach(b => b.onclick = () => go(b.dataset.go));
+  updateBadges();
 }
-$$('.tabs button').forEach(b => b.onclick = () => setTab(b.dataset.tab));
+const fmtMDs = s => { if (!s) return '—'; const [, m, d] = s.split('-').map(Number); return `${m}/${d}`; };
+function docLabel(path) { const id = planIdOf(path); const p = id && state.plans?.find(x => x.id === id); return `${p ? `${p.id} ${p.title}` : path}（${docKind(path)}）`; }
+function go(dest) {
+  const [k, ...rest] = dest.split(':'); const arg = rest.join(':');
+  if (k === 'doc') { setTab('review', { keep: true }); openDoc(arg); return; }
+  if (k === 'map') { rv.view = 'map'; setTab('review', { keep: true }); return; }
+  if (k === 'review') { if (arg) rv.filter = arg; setTab('review'); return; }
+  if (k === 'vid') { setTab('vid'); if (arg) setTimeout(() => openDetail(Number(arg)), 50); return; }
+  setTab(k);
+}
+function updateBadges() {
+  const set = (id, n, hot) => { const b = $('#' + id); if (!b) return; b.textContent = n ? n : ''; b.classList.toggle('hot', !!hot && !!n); };
+  const role = me().role;
+  if (rv.ideas) set('bd-ideas', rv.ideas.filter(i => !i.labels.includes('ネタ承認')).length);
+  if (state.plans) set('bd-review', state.plans.filter(p => p.status === 'レビュー待ち').length);
+  const orders = state.issues || [];
+  if (role === 'editor') set('bd-vid', orders.filter(i => i.meta.assignee === me().id && ['ordered', 'revising'].includes(i.status)).length, true);
+  else set('bd-vid', orders.filter(i => i.status === 'review').length, true);
+  if (role === 'owner') set('bd-att', Object.values(state.worklogs).filter(w => w.data.status === 'submitted').length, true);
+}
+
+const TABS = ['home', 'ideas', 'review', 'vid', 'att'];
+function setTab(t, opts = {}) {
+  if (t === 'rev') t = 'review';
+  if (!TABS.includes(t)) t = 'home';
+  state.tab = t; LS.set('fy_tab', t);
+  $$('.line button').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  $('#tab-home').classList.toggle('hide', t !== 'home');
+  $('#tab-att').classList.toggle('hide', t !== 'att'); $('#tab-vid').classList.toggle('hide', t !== 'vid');
+  $('#tab-rev').classList.toggle('hide', !['ideas', 'review'].includes(t));
+  if (t === 'ideas') { rv.view = 'ideas'; renderRev(); }
+  else if (t === 'review') { if (!opts.keep) { rv.view = 'list'; rv.doc = null; } renderRev(); }
+  else if (t === 'home') renderHome();
+  else if (t === 'att') renderAtt(); else renderVid();
+  window.scrollTo({ top: 0 });
+  $('.line button.on')?.scrollIntoView({ block: 'nearest', inline: 'center' });
+  updateBadges();
+}
+$$('.line button').forEach(b => b.onclick = () => setTab(b.dataset.tab));
 
 async function boot() {
   const c = state.cfg;
@@ -2281,8 +2484,10 @@ async function boot() {
     $('#projName').textContent = state.settings.project; $('#meChip').textContent = me().name;
     state.worker ||= editors()[0]?.id;
   } finally { document.body.classList.remove('loading'); }
-  setTab(state.tab);
+  const savedTab = LS.get('fy_tab', null);
+  setTab(savedTab && savedTab !== 'att' && savedTab !== 'rev' ? savedTab : (me().role === 'editor' ? (savedTab === 'att' ? 'att' : 'vid') : 'home'));
   if (!LS.get('fy_cfg_seen', false) && api.demo) { LS.set('fy_cfg_seen', true); }
+  Promise.all([loadPlans(), loadIdeas()]).then(updateBadges).catch(() => {});
 }
 boot();
 </script>

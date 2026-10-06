@@ -1,10 +1,10 @@
 # PIRTIDA制作室
 
-Fuyan Tech の動画編集外注で使う、勤務管理（稼働記録・月末の請求書PDF）と動画納品管理のWebアプリ。
+Fuyan Tech の企画レビュー・編集の発注と納品・稼働と請求を回す Web アプリ。
 
-**開く：** https://kotatakata.github.io/seisakushitsu/
+**開く：** https://seisaku.pirtida.jp/
 
 - このリポジトリは**画面（`index.html`）を公開するためだけ**のもの。データもトークンも入っていない
-- データ（発注Issue・稼働記録・請求書）は非公開リポジトリ `kotatakata/fuyantech` に保存される。各自のトークンでアクセスする
-- **元のファイルは `kotatakata/fuyantech` の `tools/seisakushitsu/`**。直すときはそちらを直してから、ここにコピーする
-- 使い方・初回設定は `kotatakata/fuyantech` の `tools/seisakushitsu/README.md` を参照
+- データは Organization `Fuyantech-studio` の非公開リポジトリ（`kikaku`・`hensyu-*`・`seikyu-*`）にあり、各自のトークンで読み書きする
+- **元のファイルは `Fuyantech-studio/kikaku` の `tools/seisakushitsu/`**。直すときはそちらを直してから、ここにコピーする
+- `CNAME` は独自ドメインの設定。消さない

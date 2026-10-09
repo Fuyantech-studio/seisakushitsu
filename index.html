@@ -87,6 +87,14 @@ header.top{position:sticky;top:0;padding-top:env(safe-area-inset-top,0px);z-inde
 .up-title{font-weight:500;line-height:1.45}
 .home-map{width:100%;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;text-align:left;background:var(--card);border:1px dashed var(--ink-3);border-radius:14px;padding:14px 16px;cursor:pointer}
 .home-map:hover{border-color:var(--aqua);border-style:solid}
+/* 作業中（タイマーが動いている人） */
+.live-list{display:grid;gap:8px}
+.live-row{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.live-dot{width:9px;height:9px;border-radius:50%;background:var(--ok);flex:none;align-self:center;animation:livepulse 1.6s ease-in-out infinite}
+.live-time{font-weight:700;font-size:16px}
+.live-card{margin-bottom:14px}
+@keyframes livepulse{50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.live-dot{animation:none}}
 /* 稼働・請求：月の流れ */
 .mflow{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--ink-3)}
 .mflow span{padding:2px 9px;border-radius:99px;border:1px solid var(--line);background:var(--card)}
@@ -396,8 +404,12 @@ tr.rv-blk.has-note td:first-child,tr.rv-blk.has-note th:first-child{box-shadow:i
 
     <div class="grid g-att">
       <div class="stack">
+        <div class="card hide" id="liveAtt">
+          <h2>作業中<span class="sp"></span><span class="note">1分ごとに更新</span></h2>
+          <div class="live-list" id="liveAttList"></div>
+        </div>
         <div class="card" id="timerCard">
-          <h2>⏱ 作業タイマー<span class="sp"></span><span class="note">止めると1分単位で記録されます</span></h2>
+          <h2>⏱ 作業タイマー<span class="sp"></span><span class="note">止めると1分単位で記録されます。別の端末からも止められます</span></h2>
           <div class="timer">
             <div class="clock" id="clock">0:00:00</div>
             <div class="row" style="flex:1">
@@ -624,6 +636,7 @@ class GitHubBackend {
   async writeB64(path, content, sha, message) {
     return this.req('PUT', `${this.rp}/contents/${this.p(path)}`, { message, content, branch: this.c.branch || 'main', ...(sha ? { sha } : {}) });
   }
+  remove(path, sha, message) { return this.req('DELETE', `${this.rp}/contents/${this.p(path)}`, { message, sha, branch: this.c.branch || 'main' }); }
   async listDir(path) {
     try { return (await this.req('GET', `${this.rp}/contents/${this.p(path)}${this.ref()}`)).map(x => ({ name: x.name, type: x.type })); }
     catch (e) { if (e.status === 404) return []; throw e; }
@@ -698,7 +711,12 @@ class DemoBackend {
   async writeB64(path, content, sha) {
     const cur = this.s.files[path];
     if (cur && cur.sha !== sha) { const e = new Error('conflict'); e.status = 409; throw e; }
-    this.s.files[path] = { content, sha: uid() }; this.save(); return {};
+    const sh = uid(); this.s.files[path] = { content, sha: sh }; this.save(); return { content: { sha: sh } };
+  }
+  async remove(path, sha) {
+    const cur = this.s.files[path];
+    if (!cur || cur.sha !== sha) { const e = new Error('conflict'); e.status = 409; throw e; }
+    delete this.s.files[path]; this.save(); return {};
   }
   async listDir(path) {
     const pre = path.replace(/\/$/, '') + '/'; const out = new Map();
@@ -845,6 +863,7 @@ const state = {
   month: ym(new Date()),
   worker: null,
   worklogs: {},   // key `${worker}/${month}` -> {data, sha}
+  timers: {},     // worker -> {data, sha} | null  計測中のタイマー（GitHub に保存）
   issues: [],
   tab: LS.get('fy_tab', 'att'),
   editingId: null
@@ -1004,6 +1023,60 @@ async function mutateWL(fn, message) {
   throw new Error('他の人の更新と競合しました。再読み込みしてください。');
 }
 
+/* 計測中のタイマー：seikyu-<編集者>/timer.json（旧方式は seisaku/timer/<編集者>.json）
+   GitHub に置くので、別の端末から止められ、オーナーには「作業中」として見える */
+const timerPath = w => ws.mode === 'org' ? 'timer.json' : `${DATA}timer/${w}.json`;
+async function loadTimer(w) {
+  const r = await billApi(w).readJSON(timerPath(w));
+  return (state.timers[w] = r.data ? { data: r.data, sha: r.sha } : null);
+}
+const watchWorkers = () => (isOwner() ? editors().map(e => e.id) : [me().id]).filter(w => canSeeBilling(w));
+async function loadTimers() { await Promise.all(watchWorkers().map(w => loadTimer(w).catch(() => null))); }
+const curTimer = () => state.timers[state.worker]?.data || null;
+async function writeTimer(w, data, sha, message) {
+  const r = await billApi(w).writeB64(timerPath(w), b64enc(JSON.stringify(data, null, 2)), sha, `${message}（${me().name}）`);
+  state.timers[w] = { data, sha: r?.content?.sha || null };
+  if (!state.timers[w].sha) await loadTimer(w);
+}
+// 以前の版で端末の中だけに残った計測中のタイマーを GitHub に移す
+async function migrateLocalTimer() {
+  const t = LS.get('fy_timer', null); if (!t) return;
+  const w = t.worker || state.worker;
+  try {
+    if (canSeeBilling(w) && !state.timers[w]) { const { worker, ...rest } = t; await writeTimer(w, { ...rest, by: me().id }, null, 'タイマー開始（端末から移行）'); }
+    LS.del('fy_timer');
+  } catch (e) { console.error(e); }
+}
+const fmtSince = start => { const m = Math.max(0, Math.floor((Date.now() - start) / 60000)); return `${Math.floor(m / 60)}:${pad(m % 60)}`; };
+function liveRows() { return watchWorkers().filter(w => state.timers[w]).map(w => ({ w, t: state.timers[w].data })); }
+function liveHtml(rows) {
+  if (!rows.length) return '<div class="note">今、作業中の人はいません</div>';
+  return rows.map(({ w, t }) => {
+    const I = state.issues.find(i => i.meta.assignee === w && String(i.no) === String(t.issue));
+    return `<div class="live-row"><span class="live-dot" aria-hidden="true"></span><b>${esc(memberName(w))}さん</b><span class="num live-time" data-since="${Number(t.start)}">${fmtSince(t.start)}</span>
+      <span class="note">${[t.category, I ? `#${I.no} ${I.title}` : '', t.desc].filter(Boolean).map(esc).join('・')}（${hm(new Date(t.start))}〜）</span></div>`;
+  }).join('');
+}
+// 作業中の表示（オーナーのホームと「稼働・請求」）
+function renderLive() {
+  const rows = liveRows(), html = liveHtml(rows);
+  const att = $('#liveAtt'); if (att) { att.classList.toggle('hide', !isOwner()); $('#liveAttList').innerHTML = html; }
+  const home = $('#liveHomeList'); if (home) home.innerHTML = html;
+}
+// 1分ごとに最新の状態を取りに行く（画面が見えていて、ホームか稼働・請求を開いているときだけ）
+async function pollTimers() {
+  if (!api || api.demo || document.hidden || !['home', 'att'].includes(state.tab) || !watchWorkers().length) return;
+  const before = JSON.stringify(state.timers[state.worker]?.data || null);
+  await loadTimers();
+  renderLive();
+  if (state.tab === 'att' && before !== JSON.stringify(curTimer())) {
+    const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || '');
+    if (!typing) { await loadWorklogs(state.worker).catch(() => {}); renderAtt(); } else updateClock();
+  }
+}
+setInterval(() => pollTimers().catch(() => {}), 60000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) pollTimers().catch(() => {}); });
+
 /* 請求計算：上限・無償修正・固定額を反映 */
 function computeBilling() {
   const all = [];
@@ -1073,7 +1146,7 @@ function renderAtt() {
 
   // フォーム
   const tCat = $('#tCat'), eCat = $('#eCat');
-  const timer = LS.get('fy_timer', null);
+  const timer = curTimer();
   tCat.innerHTML = catOptions(timer?.category); eCat.innerHTML = catOptions(eCat.value || termsOf(state.worker).categories[0]);
   $('#tIssue').innerHTML = issueOptions(timer?.issue);
   const eIssueVal = $('#eIssue').value; $('#eIssue').innerHTML = issueOptions(eIssueVal);
@@ -1082,7 +1155,7 @@ function renderAtt() {
   if (!$('#xDate').value) $('#xDate').value = ymd(new Date());
   const lk = locked();
   $$('#timerCard input,#timerCard select,#timerCard button,#eSave,#xAdd').forEach(x => x.disabled = lk);
-  updateClock();
+  updateClock(); renderLive();
 
   // 明細
   const S = monthSummary();
@@ -1139,7 +1212,8 @@ function renderAtt() {
 }
 
 function updateClock() {
-  const t = LS.get('fy_timer', null), c = $('#clock'), b = $('#tBtn');
+  $$('[data-since]').forEach(x => { x.textContent = fmtSince(Number(x.dataset.since)); });
+  const t = curTimer(), c = $('#clock'), b = $('#tBtn');
   if (!t) { c.textContent = '0:00:00'; c.classList.remove('run'); b.textContent = '開始'; b.className = 'btn pri'; return; }
   const s = Math.floor((Date.now() - t.start) / 1000);
   c.textContent = `${Math.floor(s / 3600)}:${pad(Math.floor(s / 60) % 60)}:${pad(s % 60)}`;
@@ -1163,21 +1237,45 @@ async function guarded(btn, fn) {
   finally { if (el) el.disabled = false; }
 }
 
+let tSaveT;
 $('#tBtn').onclick = e => guarded(e.currentTarget, async () => {
-  const t = LS.get('fy_timer', null);
-  if (!t) { LS.set('fy_timer', { start: Date.now(), category: $('#tCat').value, issue: $('#tIssue').value, desc: $('#tDesc').value, worker: state.worker }); updateClock(); return; }
+  const w = state.worker, had = !!curTimer();
+  await loadTimer(w);   // 別の端末で始めた・止めたかもしれない
+  const t = curTimer();
+  if (had !== !!t) {
+    toast(t ? '別の端末で計測中でした。表示を更新しました' : '別の端末で停止済みでした。表示を更新しました');
+    await loadWorklogs(w); renderAtt(); return;
+  }
+  if (w !== me().id && !confirm(`${memberName(w)}さんのタイマーを${t ? '止めて記録' : '開始'}しますか？`)) return;
+  if (!t) {
+    await writeTimer(w, { start: Date.now(), category: $('#tCat').value, issue: $('#tIssue').value, desc: $('#tDesc').value, by: me().id }, null, 'タイマー開始');
+    updateClock(); renderLive(); return;
+  }
+  clearTimeout(tSaveT);
   const start = new Date(t.start), end = new Date();
   const minutes = Math.floor((end - start) / 60000);
   const entry = { id: uid(), date: ymd(start), start: hm(start), end: hm(end), breakMin: 0, minutes, category: $('#tCat').value, issue: $('#tIssue').value ? Number($('#tIssue').value) : null, desc: $('#tDesc').value, free: false, by: me().id, via: 'timer' };
-  LS.del('fy_timer');
-  if (minutes < 1) { toast('1分未満のため記録しませんでした'); renderAtt(); return; }
-  const prevMonth = state.month; state.month = ym(start); const prevWorker = state.worker; state.worker = t.worker || state.worker;
-  try { await mutateWL(d => { d.entries.push(entry); }, `稼働を記録 ${entry.date} ${fmtShort(minutes)}`); }
-  finally { state.month = prevMonth; state.worker = prevWorker; }
+  if (minutes >= 1) {
+    const prevMonth = state.month; state.month = ym(start);
+    try { await mutateWL(d => { d.entries.push(entry); }, `稼働を記録 ${entry.date} ${fmtShort(minutes)}`); }
+    finally { state.month = prevMonth; }
+  }
+  await billApi(w).remove(timerPath(w), state.timers[w].sha, `タイマー停止（${me().name}）`);
+  state.timers[w] = null;
   $('#tDesc').value = '';
-  toast(`${fmtHM(minutes)} を記録しました`); renderAtt();
+  toast(minutes >= 1 ? `${fmtHM(minutes)} を記録しました` : '1分未満のため記録しませんでした'); renderAtt();
 });
-['#tCat', '#tIssue', '#tDesc'].forEach(s => $(s).addEventListener('change', () => { const t = LS.get('fy_timer', null); if (t) { t.category = $('#tCat').value; t.issue = $('#tIssue').value; t.desc = $('#tDesc').value; LS.set('fy_timer', t); } }));
+// 計測中に区分・動画・作業内容を変えたら、GitHub のタイマーにも反映する
+['#tCat', '#tIssue', '#tDesc'].forEach(sel => $(sel).addEventListener('change', () => {
+  const w = state.worker; if (!state.timers[w]) return;
+  clearTimeout(tSaveT);
+  tSaveT = setTimeout(() => guarded(null, async () => {
+    const cur = state.timers[w]; if (!cur) return;
+    const data = { ...cur.data, category: $('#tCat').value, issue: $('#tIssue').value, desc: $('#tDesc').value };
+    try { await writeTimer(w, data, cur.sha, 'タイマーの内容を更新'); renderLive(); }
+    catch (err) { if (err.status !== 409 && err.status !== 422) throw err; await loadTimer(w); renderAtt(); }
+  }), 600);
+}));
 
 function resetForm() {
   state.editingId = null; $('#formTitle').textContent = '稼働を手入力'; $('#eSave').textContent = '追加'; $('#eCancel').classList.add('hide');
@@ -2537,7 +2635,7 @@ async function renderHome() {
   if (!el.dataset.ready) el.innerHTML = '<div class="empty">読み込み中…</div>';
   const role = me().role;
   try {
-    await Promise.all([loadPlans(), loadIdeas(), loadReviewIssues(), loadLinks()]);
+    await Promise.all([loadPlans(), loadIdeas(), loadReviewIssues(), loadLinks(), role === 'owner' ? loadTimers() : null]);
   } catch (e) { el.innerHTML = `<div class="empty">読み込めませんでした：${esc(e.message)}</div>`; return; }
   el.dataset.ready = '1';
   const plans = state.plans, today = ymd(new Date());
@@ -2609,6 +2707,7 @@ async function renderHome() {
       <div class="home-h"><h2>制作ライン</h2><span class="note">動画は 1 → 5 の順に進みます。押すとその工程へ移ります。</span></div>
       ${lineHtml}
     </section>
+    ${role === 'owner' ? `<section class="card live-card" aria-label="作業中"><h2>作業中<span class="sp"></span><span class="note">編集担当のタイマー・1分ごとに更新</span></h2><div class="live-list" id="liveHomeList">${liveHtml(liveRows())}</div></section>` : ''}
     <div class="home-grid">
       <section class="card"><h2>${role === 'editor' ? 'あなたのやること' : 'やること'}<span class="sp"></span><span class="note">${esc(me().name)}さん</span></h2><div class="td-list">${todoHtml}</div></section>
       <section class="card"><h2>近い公開予定</h2><div class="up-list">${upHtml}</div></section>
@@ -2685,7 +2784,8 @@ async function boot() {
     state.worker = me().role === 'editor' ? me().id : (billable[0]?.id || editors()[0]?.id || me().id);
     $$('.line button').forEach(b => b.classList.toggle('hide', !allowedTabs().includes(b.dataset.tab)));
     $('.line-steps').classList.toggle('only-vid', !allowedTabs().includes('ideas'));
-    await Promise.all([loadIssues(), (ws.mode !== 'org' || ws.seikyu[state.worker]) ? loadWorklogs(state.worker) : null]);
+    await Promise.all([loadIssues(), (ws.mode !== 'org' || ws.seikyu[state.worker]) ? loadWorklogs(state.worker) : null, loadTimers()]);
+    await migrateLocalTimer();
   } catch (e) {
     console.error(e);
     toast(`読み込みに失敗しました：${e.message}`, true);
